@@ -16,7 +16,23 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js" crossorigin="anonymous" defer></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js" crossorigin="anonymous" onload="processBabelScripts()"></script>
+<script>
+function processBabelScripts(){
+  if(typeof Babel === 'undefined'){setTimeout(processBabelScripts, 200);return;}
+  var scripts = document.querySelectorAll('script[type="text/babel"]');
+  scripts.forEach(function(script){
+    var clone = document.createElement('script');
+    clone.type = 'text/javascript';
+    try {
+      clone.textContent = Babel.transform(script.textContent, {presets: ['react']}).code;
+      script.parentNode.replaceChild(clone, script);
+    } catch(e) {
+      console.error('Babel transform error:', e);
+    }
+  });
+}
+</script>
 <style>
 /* ══════════════════════════════════════════════════════════
     EduGest v42.29 · Academic Atelier Design System
@@ -16176,6 +16192,5 @@ function AppWithProviders(){
   );
 }
 ReactDOM.render(<AppWithProviders/>,document.getElementById('root'));
-</script>
 </body>
 </html>
