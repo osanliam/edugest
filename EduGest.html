@@ -1318,7 +1318,7 @@ const pct2lit=(pct)=>{if(pct===null||pct===undefined)return'-';if(pct>=100)retur
 // Formatear literal con porcentaje: A (100%), B (~75%), C (~27%), AD (+100%)
 // AD siempre muestra +100% porque indica que excedió el logro esperado
 // Para A/B/C usa pct para mostrar el porcentaje real
-const fmtLitPct=(lit,pct)=>{if(lit===null||lit===undefined||lit==='-')return'-';if(lit==='AD')return'AD (+100%)';if(lit==='A')return`A (${pct}%)`;return`${lit} (~${pct}%)`;};
+const fmtLitPct=(lit,pct)=>{if(lit===null||lit===undefined||lit==='-')return'-';return lit;};
 // Calcular porcentaje de rubrica desde array de niveles [AD,A,B,C]
 // AD cuenta como 120%, A como 100%, B como 75% (punto medio 55-99), C como 27% (punto medio 0-54)
 const rubPct=(niveles)=>{if(!niveles||!niveles.length)return null;const total=niveles.length;const enAD=niveles.filter(n=>n==='AD').length;const enA=niveles.filter(n=>n==='A').length;const enB=niveles.filter(n=>n==='B').length;const enC=niveles.filter(n=>n==='C').length;const pct=(enAD*120+enA*100+enB*75+enC*27)/total;return Math.round(pct);};
@@ -1356,6 +1356,11 @@ const unitCompScore=(grades,sid,subid,pi,uid,ci,comp,sc)=>{
   for(const ik of instrOrder){
     const k=ik==='escact'?'escact|'+p:p+'|'+ik;
     if(grades[k]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[k];
+    // Buscar en slots (0-7) si no encuentra directamente
+    for(let slot=0;slot<8;slot++){
+      const slotK=ik==='escact'?`escact|${p}|sl${slot}`:`${p}|sl${slot}|${ik}`;
+      if(grades[slotK]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[slotK];
+    }
   }
   const vals=(comp.caps||[]).map((_,ri)=>grades[`${p}|${ri}`]??null);
   return calcProp(vals,sc);
@@ -1363,10 +1368,16 @@ const unitCompScore=(grades,sid,subid,pi,uid,ci,comp,sc)=>{
 
 // Nota de una competencia sin unidad (compatibilidad con datos viejos)
 const legacyCompScore=(grades,sid,subid,pi,ci,comp,sc)=>{
+  const p=`${sid}|${subid}|${pi}|${ci}`;
   const instrOrder=['diag','rub','co','examen','obs','port','anec','escact','auto'];
   for(const ik of instrOrder){
-    const k=ik==='escact'?`escact|${sid}|${subid}|${pi}|${ci}`:`${sid}|${subid}|${pi}|${ci}|${ik}`;
+    const k=ik==='escact'?`escact|${p}`:`${p}|${ik}`;
     if(grades[k]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[k];
+    // Buscar en slots (0-7) si no encuentra directamente
+    for(let slot=0;slot<8;slot++){
+      const slotK=ik==='escact'?`escact|${p}|sl${slot}`:`${p}|sl${slot}|${ik}`;
+      if(grades[slotK]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[slotK];
+    }
   }
   const vals=(comp.caps||[]).map((_,ri)=>grades[`${sid}|${subid}|${pi}|${ci}|${ri}`]??null);
   return calcProp(vals,sc);
@@ -1454,7 +1465,42 @@ const DEFAULT_USERS=[
 const getTeacherScope=(auth,subjects,gradeDefs,students)=>{
   if(!auth||auth.role!=='teacher')return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
   // Cursos donde este docente está asignado
-  const mySubjects=subjects.filter(s=>(s.teachers||[]).includes(auth.id));
+  let mySubjects=subjects.filter(s=>(s.teachers||[]).includes(auth.id));
+  // Si no tiene cursos asignados explícitamente, buscar en datos guardados (v5_gr)
+  let fallbackGids=[],fallbackSids=[];
+  if(mySubjects.length===0){
+    try{
+      const savedGrades=localStorage.getItem('v5_gr');
+      if(savedGrades){
+        const parsed=JSON.parse(savedGrades);
+        const allSubIds=new Set(subjects.map(s=>s.id));
+        const subjectIds=new Set();
+        const gidSet=new Set();
+        const sidSet=new Set();
+        Object.keys(parsed).forEach(key=>{
+          const parts=key.split('|');
+          if(parts.length>=2){
+            const maybeSubId=parts[1];
+            const maybeStudentId=parts[0];
+            if(allSubIds.has(maybeSubId)){
+              subjectIds.add(maybeSubId);
+              const st=students.find(s=>s.id===maybeStudentId);
+              if(st){gidSet.add(st.gid);sidSet.add(st.sid);}
+            }else if(parts.length>=3&&allSubIds.has(parts[2])){
+              subjectIds.add(parts[2]);
+              const st=students.find(s=>s.id===maybeSubId);
+              if(st){gidSet.add(st.gid);sidSet.add(st.sid);}
+            }
+          }
+        });
+        if(subjectIds.size>0){
+          mySubjects=subjects.filter(s=>subjectIds.has(s.id));
+          fallbackGids=[...gidSet];
+          fallbackSids=[...sidSet];
+        }
+      }
+    }catch{}
+  }
   // Recopilar grados y secciones específicamente asignados (de teacherAssignments)
   const gidSet=new Set();
   const sidSet=new Set();
@@ -1467,17 +1513,28 @@ const getTeacherScope=(auth,subjects,gradeDefs,students)=>{
       (ta.sids||[]).forEach(s=>sidSet.add(s));
     } else {
       // fallback: todos los grados del curso
-      (sub.gids||[]).forEach(g=>{
-        gidSet.add(g);
-        const gDef=gradeDefs.find(x=>x.id===g);
-        (gDef?.secs||[]).forEach(sec=>sidSet.add(sec.id));
-      });
+      if(fallbackGids.length>0){
+        fallbackGids.forEach(g=>gidSet.add(g));
+        fallbackSids.forEach(s=>sidSet.add(s));
+      } else {
+        (sub.gids||[]).forEach(g=>{
+          gidSet.add(g);
+          const gDef=gradeDefs.find(x=>x.id===g);
+          (gDef?.secs||[]).forEach(sec=>sidSet.add(sec.id));
+        });
+      }
     }
   });
+  // Si aún no tiene cursos, mostrar TODOS
+  if(mySubjects.length===0){mySubjects=subjects;}
   const myGids=[...gidSet];
   const mySids=[...sidSet];
-  const myStudentIds=students.filter(s=>myGids.includes(s.gid)&&mySids.includes(s.sid)).map(s=>s.id);
-  return{mySubjects,myGids,mySids,myStudentIds,isTeacher:true};
+  // Si no hay grados/secciones asignados, mostrar todos
+  const finalGids=myGids.length>0?myGids:gradeDefs.map(g=>g.id);
+  const finalSids=mySids.length>0?mySids:gradeDefs.flatMap(g=>(g.secs||[]).map(s=>s.id));
+  const myStudentIds=students.filter(s=>finalGids.includes(s.gid)&&finalSids.includes(s.sid)).map(s=>s.id);
+  console.log('DEBUG getTeacherScope:',{mySubjects:mySubjects.length,myGids:finalGids.length,mySids:finalSids.length,myStudentIds:myStudentIds.length,subjects:subjects.length});
+  return{mySubjects,myGids:finalGids,mySids:finalSids,myStudentIds,isTeacher:true};
 };
 
 
@@ -2034,9 +2091,9 @@ const examNota=(aciertos)=>{
 const examNivel=(aciertos,total=10)=>{const pct=(aciertos/total)*100;if(pct>=100)return'A';if(pct>=55)return'B';return'C';};
 
 // ── MODAL EVALUACIÓN DIAGNÓSTICA ──────────────────────────
-function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, gradeDefs, auth}){
+function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, gradeDefs, auth, slotIdx}){
   const tipo=diagTipo(compName);
-  const pfx=uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const diagKey=`${pfx}|diag`;
   const diagRawKey=`${pfx}|diagraw`;
 
@@ -2062,7 +2119,14 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
 
   // Cargar respuestas existentes
   const initResp=()=>{
-    try{return JSON.parse(grades[diagRawKey]||'{}');}catch{return{};}
+    try{
+      if(grades[diagRawKey])return JSON.parse(grades[diagRawKey]);
+      if(slotIdx!=null){
+        const legacyPfx=uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`;
+        if(grades[`${legacyPfx}|diagraw`])return JSON.parse(grades[`${legacyPfx}|diagraw`]);
+      }
+      return{};
+    }catch{return{};}
   };
   const[resp,setResp]=useState(initResp);
   const[saved,setSaved]=useState(false);
@@ -2080,7 +2144,7 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
     ? claves.filter(k=>resp[`P${k.n}`]).length
     : claves.filter(k=>resp[k.id]).length;
 
-  const canEdit=!auth||(auth?.role==='teacher');
+  const canEdit=!auth||(['teacher','admin','director','subdirector'].includes(auth?.role));
   const guardar=()=>{
     if(!canEdit)return;
     const ng={...grades};
@@ -2134,15 +2198,15 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
             <p style={{margin:0,fontSize:11,color:'var(--t2)'}}>{st.name} · <b>{gradeName}</b> · {total} {esLee?'ítems':'criterios'}</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            {/* Solo admin/director pueden editar claves */}
             {(auth?.role==='admin'||auth?.role==='director')&&(
               <button onClick={()=>{setEditMode(e=>!e);setClavesEdit(JSON.parse(JSON.stringify(claves)));}}
                 style={{padding:'4px 10px',borderRadius:8,fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',
                   border:'1px solid var(--r)',background:editMode?'var(--r3)':'transparent',color:'var(--r)'}}>
-                {editMode?'✓ Ver respuestas':'⚙️ Editar claves'}
+                {editMode?'✓ Ver respuestas':'✏️ Editar'}
               </button>
             )}
-            <button onClick={()=>{guardar();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar el diagnóstico de este alumno?'))return;const ng={...grades};delete ng[diagKey];delete ng[diagRawKey];setResp({});onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{guardar();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'var(--bg)',color:'var(--t2)',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -2351,8 +2415,8 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
 }
 
 // ── MODAL EXAMEN DE COMPRENSIÓN LECTORA ────────────────────
-function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, gradeDefs, auth, sc, settings}){
-  const pfx=uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`;
+function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, gradeDefs, auth, sc, settings, slotIdx}){
+  const pfx=(uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`)+((slotIdx!=null&&slotIdx!==undefined)?`|sl${slotIdx}`:'');
   const examKey=`${pfx}|examen`;
   const examRawKey=`${pfx}|examenraw`;
 
@@ -2384,7 +2448,14 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
   };
 
   const initResp=()=>{
-    try{return JSON.parse(grades[examRawKey]||'{}');}catch{return{};}
+    try{
+      if(grades[examRawKey])return JSON.parse(grades[examRawKey]);
+      if(slotIdx!=null){
+        const legacyPfx=uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`;
+        if(grades[`${legacyPfx}|examenraw`])return JSON.parse(grades[`${legacyPfx}|examenraw`]);
+      }
+      return{};
+    }catch{return{};}
   };
   const[resp,setResp]=React.useState(initResp);
   const[saved,setSaved]=React.useState(false);
@@ -2398,7 +2469,7 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
   const pct=total>0?Math.round((aciertos/total)*100):0;
   const litPct=sc==='literal'?pct2lit(pct):null;
 
-  const canEdit=!auth||(auth?.role==='teacher');
+  const canEdit=!auth||(['teacher','admin','director','subdirector'].includes(auth?.role));
 
   const guardar=()=>{
     if(!canEdit)return;
@@ -2512,7 +2583,7 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5,flexWrap:'wrap',gap:6}}>
               <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
                 <span style={{fontSize:11,color:'var(--t2)'}}>Respondidas: <b style={{color:'#af2428'}}>{respondidas}/{total}</b></span>
-                {respondidas===total&&<span style={{fontSize:11,fontWeight:700,color:nota>=11?'var(--ok)':'var(--err)'}}>✓ {sc==='literal'?`${pct}% → ${litPct}`:`Nota: ${nota}/20`} ({aciertos} aciertos)</span>}
+                {respondidas===total&&<span style={{fontSize:11,fontWeight:700,color:nota>=11?'var(--ok)':'var(--err)'}}>✓ {sc==='literal'?litPct:`Nota: ${nota}/20`} ({aciertos} aciertos)</span>}
               </div>
             </div>
             <div style={{height:6,background:'var(--bg3)',borderRadius:3,overflow:'hidden'}}>
@@ -2655,9 +2726,9 @@ const DEFAULT_RUB_DESCRIPTORS=[
   {k:'LD',l:'Logro Destacado',score:20,col:'#6A1B9A',bg:'#F3E5F5'},
 ];
 
-function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,onSave,onClose,sc,settings,auth}){
+function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,onSave,onClose,sc,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   // Scores stored per criterion per level descriptor
   const selKey=ri=>`${pfx}|rub|${ri}`;
   const getSel=ri=>grades[selKey(ri)]||null;
@@ -2681,11 +2752,11 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
       const avg=sels.reduce((a,k)=>{const found=DEFAULT_RUB_DESCRIPTORS.find(l=>l.k===k);return a+(found?found.score:0);},0)/sels.length;
       ng[`${pfx}|rub`]=parseFloat(avg.toFixed(1));
     }else delete ng[`${pfx}|rub`];
-    if(!auth||(auth?.role==='teacher'))onSave(ng);
+    if(!auth||(['teacher','admin','director','subdirector'].includes(auth?.role)))onSave(ng);
   };
 
   const saveDescriptors=()=>{
-    if(auth&&auth?.role!=='teacher')return;
+    if(auth&&!(['teacher','admin','director','subdirector'].includes(auth?.role)))return;
     const ng={...grades,[descKey]:JSON.stringify(descForm)};
     setDescriptors(descForm);
     onSave(ng);
@@ -2728,11 +2799,9 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {nivelRub&&nivelRub!=='-'&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,215,0,0.25)',color:'var(--y)',fontWeight:700,fontSize:12}}>Nivel: {nivelRub}</span>}
-            <Btn v="ghost" onClick={()=>{setEditCrit(e=>!e);setEditDesc(false);}} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>{editCrit?'✓ Listo':'✏️ Criterios'}</Btn>
-            <Btn v="ghost" onClick={()=>{setEditDesc(e=>!e);setEditCrit(false);setDescForm(descriptors);}} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>{editDesc?'✓ Listo':'📝 Descriptores'}</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            <Btn v="ghost" onClick={()=>{setEditCrit(e=>!e);setEditDesc(e=>!e);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{(editCrit||editDesc)?'✓ Listo':'✏️ Editar'}</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar toda la rúbrica de este alumno?'))return;const ng={...grades};criterios.forEach((_,ri)=>{delete ng[selKey(ri)];});delete ng[`${pfx}|rub`];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -2825,7 +2894,7 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             <div style={{marginTop:10,display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
               {score!==undefined&&(
                 <div style={{padding:'8px 16px',borderRadius:10,background:LBGC[ltype(pct2l(checked,criterios.length))],border:`1.5px solid ${LCOL[ltype(pct2l(checked,criterios.length))]}`,display:'flex',gap:12,alignItems:'center'}}>
-                  <span style={{fontSize:13,fontWeight:700,color:LCOL[ltype(pct2l(checked,criterios.length))]}}>Nota: {score}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:LCOL[ltype(pct2l(checked,criterios.length))]}}>{sc==='literal'?pct2l(checked,criterios.length):('Nota: '+score)}</span>
                   <Badge l={pct2l(checked,criterios.length)} type={ltype(pct2l(checked,criterios.length))}/>
                 </div>
               )}
@@ -2839,12 +2908,12 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
 }
 
 // ── LISTA DE COTEJO MODAL — criterios editables, exportable
-function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,onSave,onClose,sc,settings,auth}){
+function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,onSave,onClose,sc,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const getVal=ri=>grades[`${pfx}|co|${ri}`]??false;
   const getObs=ri=>grades[`${pfx}|co|obs|${ri}`]??'';
-  const canEdit=!auth||(auth?.role==='teacher');
+  const canEdit=!auth||(['teacher','admin','director','subdirector'].includes(auth?.role));
   const toggle=ri=>{
     if(!canEdit)return;
     const ng={...grades};
@@ -2891,11 +2960,10 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.7)'}}>{st.name} | {piName} · {checked}/{criterios.length} indicadores</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            {score!==undefined&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>Nota: {score} → {pct2l(checked,criterios.length)}</span>}
-            <Btn v="ghost" onClick={()=>setEditCrit(e=>!e)} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editCrit?'✓ Listo':'✏️ Editar'}</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            {score!==undefined&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>{pct2l(checked,criterios.length)} <span style={{fontSize:9,opacity:.75}}>({checked>0?Math.round((checked/criterios.length)*100):0}%)</span></span>}
+            <Btn v="ghost" onClick={()=>setEditCrit(e=>!e)} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editCrit?'✓ Listo':'✏️ Editar'}</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar esta lista de cotejo?'))return;const ng={...grades};criterios.forEach((_,ri)=>{delete ng[`${pfx}|co|${ri}`];delete ng[`${pfx}|co|obs|${ri}`];});delete ng[`${pfx}|co`];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -2942,7 +3010,7 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             <div style={{marginTop:10,display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
               {score!==undefined&&(
                 <div style={{padding:'6px 14px',borderRadius:8,background:LBGC[ltype(pct2l(checked,criterios.length))],border:`1.5px solid ${LCOL[ltype(pct2l(checked,criterios.length))]}`,display:'flex',gap:10,alignItems:'center'}}>
-                  <span style={{fontSize:12,fontWeight:700,color:LCOL[ltype(pct2l(checked,criterios.length))]}}>{checked}/{criterios.length} indicadores → {score} pts</span>
+                  <span style={{fontSize:12,fontWeight:700,color:LCOL[ltype(pct2l(checked,criterios.length))]}}>{checked}/{criterios.length} indicadores{sc!=='literal'?` → ${score} pts`:''}</span>
                   <Badge l={pct2l(checked,criterios.length)} type={ltype(pct2l(checked,criterios.length))}/>
                 </div>
               )}
@@ -2956,9 +3024,9 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
 
 // ── FICHA DE OBSERVACIÓN DEL DOCENTE ─────────────────────
 // Instrumento guardado en grades con prefijo 'obs|subid|pi|uid|ci'
-function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth}){
+function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`obs|${sid}|${subid}|${pi}|${uid}|${ci}`:`obs|${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`obs|${sid}|${subid}|${pi}|${uid}|${ci}`:`obs|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   // Default indicators based on competence type
@@ -2998,7 +3066,7 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
   const getEv=id=>grades[`${pfx}|${id}|ev`]||'';
   const getObs=()=>grades[`${pfx}|obs`]||'';
 
-  const canEditObs=!auth||(auth?.role==='teacher');
+  const canEditObs=!auth||(['teacher','admin','director','subdirector'].includes(auth?.role));
   const setFreq=(id,val)=>{if(!canEditObs)return;const ng={...grades};ng[`${pfx}|${id}`]=val;onSave(ng);};
   const setEv=(id,val)=>{if(!canEditObs)return;const ng={...grades};if(val)ng[`${pfx}|${id}|ev`]=val;else delete ng[`${pfx}|${id}|ev`];onSave(ng);};
   const setObs=(val)=>{if(!canEditObs)return;const ng={...grades};if(val)ng[`${pfx}|obs`]=val;else delete ng[`${pfx}|obs`];onSave(ng);};
@@ -3044,10 +3112,9 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.6)'}}>{st.name} | {piName}</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            <Btn v="ghost" onClick={()=>{setEditInds(e=>!e);setIndsForm(indicators);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editInds?'✓ Listo':'✏️ Editar'}</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            <Btn v="ghost" onClick={()=>{setEditInds(e=>!e);setIndsForm(indicators);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editInds?'✓ Listo':'✏️ Editar'}</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar esta ficha de observación?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3101,9 +3168,9 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
 }
 
 // ── PORTAFOLIO DE EVIDENCIAS ──────────────────────────────
-function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth}){
+function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`port|${sid}|${subid}|${pi}|${uid}|${ci}`:`port|${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`port|${sid}|${subid}|${pi}|${uid}|${ci}`:`port|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   const evidenciasKey=`port_evs|${subid}|${ci}`;
@@ -3152,11 +3219,10 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.6)'}}>{st.name} | {piName} · {presentados}/{total} evidencias</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>Nota: {score}</span>}
-            <Btn v="ghost" onClick={()=>{setEditEvs(e=>!e);setEvsForm(evidencias);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editEvs?'✓ Listo':'✏️ Editar'}</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>{pct2l(presentados,total)} <span style={{fontSize:9,opacity:.75}}>({presentados}/{total})</span></span>}
+            <Btn v="ghost" onClick={()=>{setEditEvs(e=>!e);setEvsForm(evidencias);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editEvs?'✓ Listo':'✏️ Editar'}</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar el portafolio de este alumno?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3209,9 +3275,9 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
 }
 
 // ── REGISTRO ANECDÓTICO ───────────────────────────────────
-function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth}){
+function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`anec|${sid}|${subid}|${pi}|${uid}|${ci}`:`anec|${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`anec|${sid}|${subid}|${pi}|${uid}|${ci}`:`anec|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   const getAnecdotas=()=>{try{const d=JSON.parse(grades[`${pfx}|list`]||'null');return d||[]}catch{return[];}};
@@ -3253,10 +3319,9 @@ function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.6)'}}>{st.name} | {piName} · {anecdotes.length} registro(s)</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            <Btn v="ghost" onClick={addAnecdota} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>+ Registro</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            <Btn v="ghost" onClick={addAnecdota} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>✏️ Editar / + Registro</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar todos los registros anecdóticos?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3296,9 +3361,9 @@ function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
 }
 
 // ── ESCALA DE VALORACIÓN DE ACTITUDES (RUBRICA) ────────────────────
-function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth}){
+function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
-  const pfx=uid?`escact|${sid}|${subid}|${pi}|${uid}|${ci}`:`escact|${sid}|${subid}|${pi}|${ci}`;
+  const pfx=(uid?`escact|${sid}|${subid}|${pi}|${uid}|${ci}`:`escact|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   // Niveles de la escala con colores
@@ -3377,11 +3442,10 @@ function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose
           </div>
            <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {saved&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(16,185,129,0.3)',color:'#fff',fontWeight:700,fontSize:11,animation:'fadeIn .2s ease'}}>✓ Guardado</span>}
-            {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>Nota: {score}</span>}
-            <Btn v="ghost" onClick={()=>{setActiveTab('editar');setEditInds(true);setIndsForm(indicadores);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>✏️ Editar</Btn>
-            <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
-            <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
+            {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>{score>0?pct2l(Math.round((score/(maxScore||1))*100),'pct'):'-'}</span>}
+            <Btn v="ghost" onClick={()=>{setActiveTab('editar');setEditInds(true);setIndsForm(indicadores);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>✏️ Editar</Btn>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar la escala de actitudes de este alumno?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3759,7 +3823,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   const[searchQ,setSearchQ]=useState('');
   const[modal,setModal]=useState(null);
   const[compSaved,setCompSaved]=useState(false);// feedback guardado competencias
-  const sc=settings.scaleType||'numeric';
+  const sc=settings.scaleType||'literal';
   const LITERAL=['AD','A','B','C'];
   const subject=visSubjects.find(s=>s.id===subId);
   const comps=subject?.comps||[];
@@ -3822,6 +3886,20 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
     const unitInstrs=unitInstrConfig[sid]?.[uid]?.[ci];
     if(unitInstrs!==undefined)return unitInstrs.includes(instrKey);
     return hasInstr(ci,instrKey);
+  };
+
+  // ── Slots de Excel (posición independiente, permite repetir instrumento) ──
+  // excelSlotCfg: { [subjectId]: { [uid]: { [compIdx]: [instrKey|null ×8] } } }
+  const[excelSlotCfg,setExcelSlotCfg]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('v5_excel_slots')||'null')||{};}catch{return{};}
+  });
+  const saveExcelSlotCfg=(next)=>{setExcelSlotCfg(next);localStorage.setItem('v5_excel_slots',JSON.stringify(next));};
+  const getExcelSlots=(uid,ci)=>excelSlotCfg[subId]?.[uid]?.[ci]||Array(8).fill(null);
+  const setExcelSlot=(uid,ci,slotIdx,instrKey)=>{
+    const cur=getExcelSlots(uid,ci);
+    const upd=[...cur];
+    upd[slotIdx]=instrKey||null;
+    saveExcelSlotCfg({...excelSlotCfg,[subId]:{...(excelSlotCfg[subId]||{}),[uid]:{...(excelSlotCfg[subId]?.[uid]||{}),[ci]:upd}}});
   };
 
   // Guardado con feedback visual
@@ -3945,7 +4023,8 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   }
 
   const[gradesSaved,setGradesSaved]=useState(false);
-  const[viewMode,setViewMode]=useState('registro');// 'registro' | 'resumen'
+  const[viewMode,setViewMode]=useState('excel');// 'registro' | 'resumen' | 'excel'
+  const[instrSelectorOpen,setInstrSelectorOpen]=useState(null);// {ci,slot}|null
   // Competencia seleccionada para vista de cards
   const[selComp,setSelComp]=useState(0);
   // Cuando cambia el curso, seleccionar la primera competencia
@@ -3966,20 +4045,20 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   };
   // Modal keys también deben usar la unidad activa
   const modalPi=parseInt(pi);
-  const modalUid=activeUnitId==='__legacy__'?undefined:activeUnitId;
+  const modalUid=modal?.uid;
 
   const modalSt=modal?stsFiltered.find(s=>s.id===modal.sid)||{id:modal.sid,name:''}:null;
 
   return(
     <div className="fade">
-      {modal?.type==='rub'&&modalSt&&<RubricModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'rubCrits')||comps[modal.ci]?.rubCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),rubCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'rubCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth}/>}
-      {modal?.type==='co'&&modalSt&&<CotejoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'cotCrits')||comps[modal.ci]?.cotCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),cotCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'cotCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth}/>}
-      {modal?.type==='diag'&&modalSt&&<DiagModal key={`diag-${modal.sid}-${modal.ci}-${diagClavesVer}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth}/>}
-      {modal?.type==='examen'&&modalSt&&<ExamenModal key={`examen-${modal.sid}-${modal.ci}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} sc={sc} settings={settings}/>}
-      {modal?.type==='obs'&&modalSt&&<ObsModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
-      {modal?.type==='port'&&modalSt&&<PortafolioModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
-      {modal?.type==='anec'&&modalSt&&<AnecdoticoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
-      {modal?.type==='escact'&&modalSt&&<EscalaActitudesModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
+      {modal?.type==='rub'&&modalSt&&<RubricModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'rubCrits')||comps[modal.ci]?.rubCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),rubCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'rubCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='co'&&modalSt&&<CotejoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'cotCrits')||comps[modal.ci]?.cotCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),cotCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'cotCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='diag'&&modalSt&&<DiagModal key={`diag-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}-${diagClavesVer}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='examen'&&modalSt&&<ExamenModal key={`examen-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} sc={sc} settings={settings} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='obs'&&modalSt&&<ObsModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='port'&&modalSt&&<PortafolioModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='anec'&&modalSt&&<AnecdoticoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='escact'&&modalSt&&<EscalaActitudesModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
       {modal?.type==='auto'&&modalSt&&<AutoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
       {modal?.type==='coev'&&modalSt&&<CoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} students={students}/>}
 
@@ -4128,16 +4207,26 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                   <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.5)'}}>{visSubjects.find(s=>s.id===subId)?.name||'—'} · {(settings.periods||PERIODS)[pi]}</p>
                 </div>
               </div>
-              <div style={{display:'flex',gap:6}}>
-                <button onClick={()=>setViewMode('registro')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
-                  background:viewMode==='registro'?'#0374B5':'rgba(255,255,255,0.1)',color:viewMode==='registro'?'#fff':'rgba(255,255,255,0.7)',
-                  boxShadow:viewMode==='registro'?'0 4px 12px rgba(3,116,181,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
-                  ✏️ Registro
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                <button onClick={()=>setViewMode('excel')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
+                  background:viewMode==='excel'?'#0374B5':'rgba(255,255,255,0.1)',color:viewMode==='excel'?'#fff':'rgba(255,255,255,0.7)',
+                  boxShadow:viewMode==='excel'?'0 4px 12px rgba(3,116,181,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
+                  📋 Registro por Competencias
                 </button>
                 <button onClick={()=>setViewMode('resumen')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
                   background:viewMode==='resumen'?'#10B981':'rgba(255,255,255,0.1)',color:viewMode==='resumen'?'#fff':'rgba(255,255,255,0.7)',
                   boxShadow:viewMode==='resumen'?'0 4px 12px rgba(16,185,129,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
                   📊 Resumen
+                </button>
+                <button onClick={()=>{setViewMode('instrumentos');setEditComp(0);setEditCompTab('instrs');}} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
+                  background:viewMode==='instrumentos'?'#06B6D4':'rgba(255,255,255,0.1)',color:viewMode==='instrumentos'?'#fff':'rgba(255,255,255,0.7)',
+                  boxShadow:viewMode==='instrumentos'?'0 4px 12px rgba(6,182,212,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
+                  🛠 Instrumentos
+                </button>
+                <button onClick={()=>setViewMode('instrconfig')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
+                  background:viewMode==='instrconfig'?'#8B5CF6':'rgba(255,255,255,0.1)',color:viewMode==='instrconfig'?'#fff':'rgba(255,255,255,0.7)',
+                  boxShadow:viewMode==='instrconfig'?'0 4px 12px rgba(139,92,246,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
+                  📅 Unidad
                 </button>
               </div>
             </div>
@@ -4515,163 +4604,315 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
 
       {/* ══ VISTA: EXCEL MODERNO ══ */}
       {comps.length>0&&viewMode==='excel'&&(
-        <div>
-          {/* Header Excel */}
-          <div style={{background:'linear-gradient(135deg,#0C1128 0%,#1C2540 50%,#1e1b4b 100%)',borderRadius:16,padding:'16px 20px',marginBottom:12,boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
-              <div style={{display:'flex',alignItems:'center',gap:14}}>
-                <div style={{width:44,height:44,background:'linear-gradient(135deg,#F59E0B,#D97706)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 16px rgba(245,158,11,0.4)'}}>
-                  <span style={{fontSize:20}}>📋</span>
+        (()=>{
+          // ── Definición de los 8 instrumentos disponibles ──
+          const ALL_INSTRS=[
+            {k:'examen',l:'Examen',s:'EX',c:'#EF4444',bg:'#FEE2E2'},
+            {k:'co',l:'Lista Cotejo',s:'CO',c:'#10B981',bg:'#D1FAE5'},
+            {k:'rub',l:'Rúbrica',s:'RB',c:'#8B5CF6',bg:'#EDE9FE'},
+            {k:'diag',l:'Diagnóstico',s:'DG',c:'#F59E0B',bg:'#FEF3C7'},
+            {k:'obs',l:'Observación',s:'OB',c:'#06B6D4',bg:'#E0F2FE'},
+            {k:'port',l:'Portafolio',s:'PO',c:'#0284C7',bg:'#DBEAFE'},
+            {k:'anec',l:'Anecdótico',s:'AN',c:'#7C3AED',bg:'#F5F3FF'},
+            {k:'escact',l:'Esc. Actitudes',s:'EA',c:'#EC4899',bg:'#FCE7F3'},
+          ];
+          const COMP_COLORS=['#3B82F6','#10B981','#F59E0B','#EC4899','#8B5CF6','#06B6D4'];
+          const getInstrVal=(sid,ci,instrKey,slotIdx)=>{
+            const pfxBase=activeUnitId&&activeUnitId!=='__legacy__'
+              ?`${sid}|${subId}|${pi}|${activeUnitId}|${ci}`
+              :`${sid}|${subId}|${pi}|${ci}`;
+            const slotPfx=`${pfxBase}|sl${slotIdx}`;
+            return grades[`${slotPfx}|${instrKey}`]??grades[`${pfxBase}|${instrKey}`]??null;
+          };
+          const fmtVal=(val,instrKey)=>{
+            if(val===null||val===''||val===undefined)return null;
+            if(sc==='literal')return fmtLitVal(val,instrKey,settings?.instrMax);
+            if(sc==='actitudinal')return n2act(val);
+            if(sc==='percent')return n2pct(val)+'%';
+            return typeof val==='number'?val.toFixed(1):val;
+          };
+          const getScoreColor=(v)=>v===null?'#94a3b8':v>=18?'#22C55E':v>=14?'#3B82F6':v>=11?'#F59E0B':'#EF4444';
+          const getScoreBg=(v)=>v===null?'transparent':v>=18?'rgba(34,197,94,0.1)':v>=14?'rgba(59,130,246,0.1)':v>=11?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)';
+
+          return(
+          <div onClick={()=>instrSelectorOpen&&setInstrSelectorOpen(null)}>
+            {/* ── HEADER EXCEL ── */}
+            <div style={{background:'linear-gradient(135deg,#0f172a 0%,#1e293b 100%)',borderRadius:16,padding:'18px 22px',marginBottom:14,boxShadow:'0 8px 32px rgba(0,0,0,0.3)',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:-60,right:-60,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,158,11,0.15) 0%,transparent 70%)'}}/>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12,position:'relative'}}>
+                <div style={{display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <div style={{width:44,height:44,background:'linear-gradient(135deg,#0374B5,#0369a1)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 16px rgba(3,116,181,0.4)'}}>
+                      <span style={{fontSize:20}}>📝</span>
+                    </div>
+                    <div>
+                      <h2 style={{margin:0,fontSize:17,fontWeight:800,color:'#fff',fontFamily:'Plus Jakarta Sans,sans-serif'}}>Registro de Notas</h2>
+                      <p style={{margin:0,fontSize:10,color:'rgba(255,255,255,0.5)'}}>{visSubjects.find(s=>s.id===subId)?.name||'—'} · {(settings.periods||PERIODS)[pi]}{activeUnitId&&activeUnitId!=='__legacy__'?' · '+(curBimUnits.find(u=>u.id===activeUnitId)?.name||''):''}</p>
+                    </div>
+                  </div>
+                  {/* Tabs */}
+                  <div style={{display:'flex',gap:5,padding:'4px',background:'rgba(0,0,0,0.2)',borderRadius:12}}>
+                    <button onClick={()=>setViewMode('excel')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,
+                      background:viewMode==='excel'?'#fff':'transparent',color:viewMode==='excel'?'#0374B5':'rgba(255,255,255,0.65)',
+                      boxShadow:viewMode==='excel'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>
+                      📋 Registro por Competencias
+                    </button>
+                    <button onClick={()=>setViewMode('resumen')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,
+                      background:viewMode==='resumen'?'#fff':'transparent',color:viewMode==='resumen'?'#10B981':'rgba(255,255,255,0.65)',
+                      boxShadow:viewMode==='resumen'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>
+                      📊 Resumen
+                    </button>
+                    <button onClick={()=>{setViewMode('instrumentos');setEditComp(0);setEditCompTab('instrs');}} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,
+                      background:viewMode==='instrumentos'?'#fff':'transparent',color:viewMode==='instrumentos'?'#06B6D4':'rgba(255,255,255,0.65)',
+                      boxShadow:viewMode==='instrumentos'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>
+                      🛠 Instrumentos
+                    </button>
+                    {curBimUnits.length>0&&<button onClick={()=>setViewMode('instrconfig')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,
+                      background:viewMode==='instrconfig'?'#fff':'transparent',color:viewMode==='instrconfig'?'#8B5CF6':'rgba(255,255,255,0.65)',
+                      boxShadow:viewMode==='instrconfig'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>
+                      📅 Unidad
+                    </button>}
+                  </div>
                 </div>
-                <div>
-                  <h2 style={{margin:0,fontSize:18,fontWeight:800,color:'#fff'}}>Vista Excel</h2>
-                  <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.5)'}}>{(settings.periods||PERIODS)[pi]} · {visSubjects.find(s=>s.id===subId)?.name||'—'}</p>
+                {/* Filtros */}
+                <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                  {[
+                    {col:'#60a5fa',icon:'📚',node:<select value={subId} onChange={e=>setSubId(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{visSubjects.map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>{s.name}</option>)}</select>},
+                    {col:'#a78bfa',icon:'📅',node:<select value={pi} onChange={e=>setPi(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{(settings.periods||PERIODS).map((p,i)=><option key={i} value={i} style={{color:'#000'}}>{p}</option>)}</select>},
+                    ...(curBimUnits.length>0?[{col:'#22d3ee',icon:'🔷',node:<select value={selUnit} onChange={e=>setSelUnit(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{curBimUnits.map(u=><option key={u.id} value={u.id} style={{color:'#000'}}>{u.name}</option>)}</select>}]:[]),
+                    {col:'#f472b6',icon:'🎓',node:<select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}><option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}</select>},
+                    {col:'#fbbf24',icon:'👥',node:<select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed'}}><option value="" style={{color:'#000'}}>Secc.</option>{(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}</select>},
+                  ].map((f,fi)=>(
+                    <div key={fi} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:`${f.col}20`,border:`1px solid ${f.col}50`}}>
+                      <span style={{color:f.col,fontSize:12}}>{f.icon}</span>
+                      {f.node}
+                    </div>
+                  ))}
+                  <div style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)'}}>
+                    <span style={{fontSize:12}}>🔍</span>
+                    <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Buscar..." style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',width:70,outline:'none'}}/>
+                  </div>
                 </div>
-              </div>
-              <div style={{display:'flex',gap:6}}>
-                <button onClick={()=>setViewMode('registro')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,background:'rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.7)'}}>
-                  ← Volver a Registro
-                </button>
               </div>
             </div>
-            {/* Filtros debajo del título */}
-            <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',marginTop:12}}>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(3,116,181,0.2)',border:'1px solid rgba(3,116,181,0.4)'}}>
-                <span style={{color:'#60a5fa',fontWeight:700,fontSize:11}}>📚</span>
-                <select value={subId} onChange={e=>setSubId(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:80}}>
-                  {visSubjects.map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>{s.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(139,92,246,0.2)',border:'1px solid rgba(139,92,246,0.4)'}}>
-                <span style={{color:'#a78bfa',fontWeight:700,fontSize:11}}>📅</span>
-                <select value={pi} onChange={e=>setPi(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  {(settings.periods||PERIODS).map((p,i)=><option key={i} value={i} style={{color:'#000'}}>{p}</option>)}
-                </select>
-              </div>
-              {curBimUnits.length>0&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(6,182,212,0.2)',border:'1px solid rgba(6,182,212,0.4)'}}>
-                <span style={{color:'#22d3ee',fontWeight:700,fontSize:11}}>🔷</span>
-                <select value={selUnit} onChange={e=>setSelUnit(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  {curBimUnits.map(u=><option key={u.id} value={u.id} style={{color:'#000'}}>{u.name}</option>)}
-                </select>
-              </div>}
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(236,72,153,0.2)',border:'1px solid rgba(236,72,153,0.4)'}}>
-                <span style={{color:'#f472b6',fontWeight:700,fontSize:11}}>🎓</span>
-                <select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  <option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>
-                  {availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(245,158,11,0.2)',border:'1px solid rgba(245,158,11,0.4)'}}>
-                <span style={{color:'#fbbf24',fontWeight:700,fontSize:11}}>👥</span>
-                <select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:fSec?'#fff':'rgba(255,255,255,0.5)',fontSize:11,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed',minWidth:50}}>
-                  <option value="" style={{color:'#000'}}>Sec</option>
-                  {(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)'}}>
-                <span style={{color:'#fff',fontWeight:700,fontSize:11}}>🔍</span>
-                <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Buscar..." style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',width:80,outline:'none'}}/>
-              </div>
-            </div>
-          </div>
-          
-          {/* Tabla Excel */}
-          <div style={{background:'white',borderRadius:16,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',overflow:'hidden',marginBottom:16}}>
-            <div style={{overflowX:'auto'}}>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead>
-                  <tr style={{background:'linear-gradient(135deg,#1e293b,#0f172a)'}}>
-                    <th style={{padding:'10px 6px',color:'white',fontWeight:700,textAlign:'left',position:'sticky',left:0,zIndex:3,minWidth:120,background:'#0f172a',borderRight:'2px solid rgba(255,255,255,0.2)'}}>Alumno</th>
-                    {comps.map((comp,ci)=>(
-                      ['examen','co','rub','diag','obs','port','anec'].map((instrKey,instrIdx)=>{
-                        const instrNames={examen:'Examen',co:'Cotejo',rub:'Rúbrica',diag:'Diagn.',obs:'Observ.',port:'Portaf.',anec:'Anecd.'};
-                        const instrColors={examen:'#af2428',co:'#10B981',rub:'#8B5CF6',diag:'#F59E0B',obs:'#06B6D4',port:'#0284C7',anec:'#6D28D9'};
-                        return(
-                          <th key={`${ci}-${instrIdx}`} style={{padding:'4px 1px',color:instrColors[instrKey],fontWeight:700,fontSize:8,textAlign:'center',minWidth:38,borderRight:'1px solid rgba(255,255,255,0.08)',background:'#0f172a'}}>
-                            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
-                              <span>C{ci+1}</span>
-                              <span style={{fontSize:7,opacity:0.8}}>{instrNames[instrKey]}</span>
-                            </div>
-                          </th>
-                        );
-                      })
-                    ))}
-                    <th style={{padding:'6px 2px',color:'#F59E0B',fontWeight:700,textAlign:'center',background:'rgba(245,158,11,0.3)',fontSize:8}}>
-                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
-                        <span>Prom</span>
-                        <span style={{fontSize:7,opacity:0.8}}>General</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stsFiltered.map((s,si)=>{
-                    const rowBg=si%2===0?'#fff':'#f8fafc';
-                    const getInstrKey=(sid,ci,instrKey)=>activeUnitId&&activeUnitId!=='__legacy__'?`${sid}|${subId}|${pi}|${activeUnitId}|${ci}|${instrKey}`:`${sid}|${subId}|${pi}|${ci}|${instrKey}`;
-                    return(
-                      <tr key={s.id} style={{background:rowBg,borderBottom:'1px solid #e5e7eb'}}>
-                        <td style={{padding:'6px 4px',fontWeight:600,position:'sticky',left:0,background:rowBg,zIndex:1,borderRight:'2px solid #e5e7eb'}}>
-                          <div style={{display:'flex',alignItems:'center',gap:4}}>
-                            <div style={{width:20,height:20,borderRadius:'50%',background:'linear-gradient(135deg,#af2428,#ff766f)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:8,fontWeight:800,flexShrink:0}}>
-                              {s.name.split(' ').slice(0,2).map(w=>w[0]).join('')}
-                            </div>
-                            <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:9}}>{s.name}</span>
-                          </div>
-                        </td>
-                        {comps.flatMap((comp,ci)=>{
-                          const instrKeys=['examen','co','rub','diag','obs','port','anec'];
-                          return instrKeys.map((instrKey,instrIdx)=>{
-                            const k=getInstrKey(s.id,ci,instrKey);
-                            const val=grades[k]??null;
-                            const hasData=val!==null&&val!==''&&val!==undefined;
-                            const instrBg=hasData?(instrKey==='examen'?'#fee2e2':instrKey==='co'?'#d1fae5':instrKey==='rub'?'#f3e8ff':instrKey==='diag'?'#fef3c7':instrKey==='obs'?'#e0f2fe':instrKey==='port'?'#f0fdf4':'#f5f3ff'):'#f8fafc';
-                            const instrColor=hasData?(instrKey==='examen'?'#991b1b':instrKey==='co'?'#065f46':instrKey==='rub'?'#6d28d9':instrKey==='diag'?'#92400e':instrKey==='obs'?'#0369a1':instrKey==='port'?'#047857':'#5b21b6'):'#cbd5e1';
+
+            {/* ── TABLA EXCEL ── */}
+            <div style={{background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(0,0,0,0.08)',overflow:'hidden',border:'1px solid rgba(0,0,0,0.06)'}}>
+              <div style={{overflowX:'auto',overflowY:'visible'}}>
+                <table style={{borderCollapse:'collapse',fontSize:11,minWidth:'max-content',width:'100%'}}>
+
+                  {/* ── THEAD: 3 filas ── */}
+                  <thead>
+                    {/* Fila 1: N° | Alumno | COMP 1 (span 9) | COMP 2 (span 9) | COMP 3 (span 9) | Prom General */}
+                    <tr>
+                      <th rowSpan={3} style={{padding:'0 10px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:0,zIndex:5,minWidth:36,borderRight:'1px solid rgba(255,255,255,0.1)',textAlign:'center'}}>#</th>
+                      <th rowSpan={3} style={{padding:'12px 14px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:36,zIndex:5,minWidth:160,borderRight:'2px solid rgba(255,255,255,0.15)',textAlign:'left'}}>ALUMNO</th>
+                      {comps.map((comp,ci)=>(
+                        <th key={ci} colSpan={9} style={{padding:'10px 6px',textAlign:'center',fontSize:11,fontWeight:800,color:'#fff',background:COMP_COLORS[ci%COMP_COLORS.length],borderLeft:'2px solid rgba(255,255,255,0.2)',letterSpacing:.5}}>
+                          C{ci+1}: {comp.name}
+                        </th>
+                      ))}
+                      <th rowSpan={3} style={{padding:'8px 10px',background:'linear-gradient(135deg,#1e3a5f,#1e40af)',color:'#93c5fd',fontSize:10,fontWeight:800,textAlign:'center',minWidth:60,borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
+                        PROM<br/><span style={{fontSize:8,opacity:.7}}>GENERAL</span>
+                      </th>
+                    </tr>
+
+                    {/* Fila 2: Por cada comp → PROMEDIO C# | 8 instrumentos */}
+                    <tr>
+                      {comps.map((comp,ci)=>{
+                        const compCol=COMP_COLORS[ci%COMP_COLORS.length];
+                        return[
+                          // Promedio de la competencia (primer col de las 9)
+                          <th key={`prom-${ci}`} style={{padding:'8px 6px',background:`${compCol}33`,color:compCol,fontSize:9,fontWeight:800,textAlign:'center',minWidth:54,borderLeft:'2px solid rgba(0,0,0,0.08)',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>
+                            PROM<br/>C{ci+1}
+                          </th>,
+                          // 8 slots de instrumentos
+                          ...Array.from({length:8},(_,slotIdx)=>{
+                            const slotKey=getExcelSlots(activeUnitId,ci)[slotIdx];
+                            const instr=slotKey?ALL_INSTRS.find(x=>x.k===slotKey)||null:null;
+                            const isOpen=instrSelectorOpen?.ci===ci&&instrSelectorOpen?.slot===slotIdx;
                             return(
-                              <td key={`${s.id}-${ci}-${instrIdx}`} 
-                                style={{padding:'4px 1px',textAlign:'center',cursor:'pointer',background:instrBg,border:'1px solid #e5e7eb'}}
-                                onClick={()=>setModal({type:instrKey,sid:s.id,ci})}>
-                                <span style={{fontSize:9,fontWeight:hasData?700:400,color:instrColor}}>
-                                  {hasData?(sc==='literal'?fmtLitVal(val,instrKey,settings?.instrMax):sc==='actitudinal'?n2act(val):sc==='percent'?n2pct(val)+'%':(typeof val==='number'?val.toFixed(1):val)):'—'}
-                                </span>
-                              </td>
+                              <th key={`slot-${ci}-${slotIdx}`}
+                                style={{padding:'4px 2px',background:instr?`${instr.bg}`:'#f8fafc',fontSize:9,fontWeight:700,textAlign:'center',minWidth:52,borderLeft:'1px solid rgba(0,0,0,0.06)',borderBottom:'1px solid rgba(0,0,0,0.06)',position:'relative',cursor:'pointer'}}
+                                onClick={e=>{e.stopPropagation();setInstrSelectorOpen(isOpen?null:{ci,slot:slotIdx});}}>
+                                {instr?(
+                                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                                    <span style={{fontSize:10,fontWeight:800,color:instr.c}}>{instr.s}</span>
+                                    <span style={{fontSize:7,color:instr.c,opacity:.8,whiteSpace:'nowrap'}}>{instr.l}</span>
+                                    <span style={{fontSize:7,color:'#ef4444',cursor:'pointer'}} title="Quitar instrumento" onClick={e=>{e.stopPropagation();setExcelSlot(activeUnitId,ci,slotIdx,null);setInstrSelectorOpen(null);}}>×</span>
+                                  </div>
+                                ):(
+                                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                                    <span style={{width:22,height:22,borderRadius:'50%',background:'rgba(0,0,0,0.06)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'#94a3b8',fontWeight:700,margin:'0 auto'}}>+</span>
+                                    <span style={{fontSize:7,color:'#94a3b8'}}>Agregar</span>
+                                  </div>
+                                )}
+                                {/* Dropdown selector — cualquier instrumento, cuantas veces se requiera */}
+                                {isOpen&&(
+                                  <div onClick={e=>e.stopPropagation()} style={{position:'absolute',top:'100%',left:'50%',transform:'translateX(-50%)',zIndex:999,background:'#fff',borderRadius:12,boxShadow:'0 16px 48px rgba(0,0,0,0.2)',border:'1px solid rgba(0,0,0,0.08)',padding:10,minWidth:210,marginTop:4}}>
+                                    <p style={{fontSize:10,fontWeight:700,color:'#1e293b',margin:'0 0 8px',paddingBottom:6,borderBottom:'1px solid #f1f5f9'}}>Seleccionar instrumento</p>
+                                    {ALL_INSTRS.map(ins=>{
+                                      const isCurrent=slotKey===ins.k;
+                                      return(
+                                        <div key={ins.k}
+                                          onClick={()=>{setExcelSlot(activeUnitId,ci,slotIdx,isCurrent?null:ins.k);setInstrSelectorOpen(null);}}
+                                          style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,cursor:'pointer',background:isCurrent?ins.bg:'transparent',marginBottom:2,transition:'background .15s'}}
+                                          onMouseEnter={e=>{if(!isCurrent)e.currentTarget.style.background=ins.bg+'88';}}
+                                          onMouseLeave={e=>{if(!isCurrent)e.currentTarget.style.background='transparent';}}>
+                                          <span style={{width:28,height:28,borderRadius:8,background:ins.c,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:800,flexShrink:0}}>{ins.s}</span>
+                                          <div style={{flex:1}}>
+                                            <div style={{fontSize:11,fontWeight:700,color:isCurrent?ins.c:'#1e293b'}}>{ins.l}</div>
+                                          </div>
+                                          {isCurrent&&<span style={{fontSize:14}}>✓</span>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </th>
                             );
-                          });
-                        })}
-                        {/* Promedio general */}
-                        {(()=>{
-                          const compAvgs=comps.map((comp,ci)=>{
-                            const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
-                            return typeof cv==='number'?cv:null;
-                          }).filter(v=>v!==null);
-                          const overall=compAvgs.length>0?parseFloat((compAvgs.reduce((a,b)=>a+b,0)/compAvgs.length).toFixed(1)):null;
-                          return(
-                            <td style={{padding:'4px 2px',textAlign:'center',background:overall!==null?(overall>=14?'rgba(34,197,94,0.25)':overall>=11?'rgba(245,158,11,0.25)':'rgba(239,68,68,0.25)'):'rgba(245,158,11,0.1)',border:'1px solid #e5e7eb',borderLeft:'2px solid #e5e7eb'}}>
-                              <span style={{fontSize:10,fontWeight:800,color:overall!==null?(overall>=14?'#22C55E':overall>=11?'#F59E0B':'#EF4444'):'#94a3b8'}}>
-                                {overall!==null?(sc==='literal'?(()=>{const pct=Math.round((overall/20)*100);const lit=pct>=100?'A':pct>=55?'B':'C';return fmtLitPct(lit,pct);})():sc==='actitudinal'?n2act(overall):sc==='percent'?n2pct(overall)+'%':overall.toFixed(1)):'—'}
-                              </span>
-                            </td>
-                          );
-                        })()}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div style={{padding:'8px 12px',background:'#f8fafc',borderTop:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:6}}>
-              <span style={{fontSize:9,color:'#64748b'}}>Total: {stsFiltered.length} alumnos · Clic en celda para editar instrumento</span>
-              <div style={{display:'flex',gap:3}}>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#fee2e2',color:'#991b1b'}}>EX</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#d1fae5',color:'#065f46'}}>CO</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f3e8ff',color:'#6d28d9'}}>RB</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#fef3c7',color:'#92400e'}}>DI</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#e0f2fe',color:'#0369a1'}}>OB</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f0fdf4',color:'#047857'}}>PO</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f5f3ff',color:'#5b21b6'}}>AN</span>
+                          })
+                        ];
+                      })}
+                    </tr>
+
+                    {/* Fila 3: separador visual */}
+                    <tr>
+                      {comps.flatMap((_,ci)=>[
+                        <td key={`sep-prom-${ci}`} style={{height:3,background:'rgba(0,0,0,0.04)',borderLeft:'2px solid rgba(0,0,0,0.08)'}}/>,
+                        ...Array.from({length:8},(_,si)=>(
+                          <td key={`sep-${ci}-${si}`} style={{height:3,background:'rgba(0,0,0,0.02)',borderLeft:'1px solid rgba(0,0,0,0.04)'}}/>
+                        ))
+                      ])}
+                    </tr>
+                  </thead>
+
+                  {/* ── TBODY: Filas de alumnos ── */}
+                  <tbody>
+                    {stsFiltered.length===0?(
+                      <tr><td colSpan={2+comps.length*9+1} style={{padding:48,textAlign:'center',color:'#94a3b8'}}>
+                        <div style={{fontSize:40,marginBottom:8}}>📭</div>
+                        <div style={{fontSize:14,fontWeight:700}}>Sin alumnos</div>
+                        <div style={{fontSize:12}}>Cambia los filtros de grado/sección</div>
+                      </td></tr>
+                    ):stsFiltered.map((s,si)=>{
+                      const rowBg=si%2===0?'#ffffff':'#f8fafc';
+                      // Calcula promedio general del alumno
+                      const compAvgs=comps.map((comp,ci)=>{
+                        const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
+                        return typeof cv==='number'?cv:null;
+                      }).filter(v=>v!==null);
+                      const overall=compAvgs.length>0?parseFloat((compAvgs.reduce((a,b)=>a+b,0)/compAvgs.length).toFixed(1)):null;
+                      return(
+                        <tr key={s.id} style={{background:rowBg,borderBottom:'1px solid rgba(0,0,0,0.04)'}}
+                          onMouseEnter={e=>e.currentTarget.style.background=si%2===0?'#f0f9ff':'#e8f4fd'}
+                          onMouseLeave={e=>e.currentTarget.style.background=rowBg}>
+                          {/* N° */}
+                          <td style={{padding:'10px 0',textAlign:'center',position:'sticky',left:0,zIndex:2,background:'inherit',borderRight:'1px solid rgba(0,0,0,0.04)',fontWeight:700,fontSize:11,color:'#64748b'}}>
+                            {si+1}
+                          </td>
+                          {/* Nombre */}
+                          <td style={{padding:'10px 14px',position:'sticky',left:36,zIndex:2,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)'}}>
+                            <div style={{display:'flex',alignItems:'center',gap:10}}>
+                              <Avatar s={s} size={30}/>
+                              <div>
+                                <div style={{fontSize:12,fontWeight:700,color:'#1e293b',whiteSpace:'nowrap'}}>{s.name}</div>
+                                {s.dni&&<div style={{fontSize:10,color:'#94a3b8'}}>{s.dni}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          {/* Por competencia: PROM + 8 instrumentos */}
+                          {comps.map((comp,ci)=>{
+                            const compCol=COMP_COLORS[ci%COMP_COLORS.length];
+                            const compCV=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
+                            const activeInstrsList=getExcelSlots(activeUnitId,ci).map(k=>k?ALL_INSTRS.find(x=>x.k===k)||null:null);
+                            return[
+                              // Promedio competencia
+                              <td key={`cv-${ci}`} style={{padding:'8px 6px',textAlign:'center',background:compCV!==null?getScoreBg(compCV):`${compCol}08`,borderLeft:'2px solid rgba(0,0,0,0.08)'}}>
+                                {compCV!==null?(
+                                  <span style={{fontSize:14,fontWeight:900,color:getScoreColor(compCV),background:`${getScoreColor(compCV)}20`,padding:'4px 10px',borderRadius:8}}>{n2l(compCV)}</span>
+                                ):<span style={{color:'#cbd5e1',fontSize:11}}>—</span>}
+                              </td>,
+                              // 8 slots de instrumentos
+                              ...Array.from({length:8},(_,slotIdx)=>{
+                                const instr=activeInstrsList[slotIdx];
+                                if(!instr){
+                                  return<td key={`empty-${ci}-${slotIdx}`} style={{background:'#f8fafc',borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:52}}/>;
+                                }
+                                const val=getInstrVal(s.id,ci,instr.k,slotIdx);
+                                const hasData=val!==null&&val!==''&&val!==undefined;
+                                const fv=hasData?fmtVal(val,instr.k):null;
+                                const numVal=hasData&&typeof val==='number'?val:hasData&&!isNaN(parseFloat(val))?parseFloat(val):null;
+                                return(
+                                  <td key={`instr-${ci}-${slotIdx}`}
+                                    style={{padding:'6px 3px',textAlign:'center',cursor:'pointer',background:hasData?instr.bg+'88':rowBg,borderLeft:'1px solid rgba(0,0,0,0.04)',transition:'background .15s'}}
+                                    onClick={e=>{e.stopPropagation();setModal({type:instr.k,sid:s.id,ci,slotIdx,uid:activeUnitId==='__legacy__'?undefined:activeUnitId});}}
+                                    title={canEditGrades?`Editar ${instr.l}`:`${instr.l} (solo lectura)`}>
+                                    {hasData?(
+                                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                                        <span style={{fontSize:13,fontWeight:800,color:sc==='literal'?instr.c:(numVal?getScoreColor(numVal):instr.c)}}>{fv}</span>
+                                        {!sc||sc!=='literal'?numVal&&<div style={{width:28,height:3,borderRadius:2,background:'#e5e7eb',overflow:'hidden'}}>
+                                          <div style={{height:'100%',width:`${Math.min(100,(numVal/20)*100)}%`,background:getScoreColor(numVal),borderRadius:2}}/>
+                                        </div>:null}
+                                      </div>
+                                    ):(
+                                      <span style={{width:28,height:28,borderRadius:6,border:`1.5px dashed ${instr.c}66`,display:'inline-flex',alignItems:'center',justifyContent:'center',color:instr.c+'88',fontSize:14,fontWeight:700}}>
+                                        {canEditGrades?'✎':'—'}
+                                      </span>
+                                    )}
+                                  </td>
+                                );
+                              })
+                            ];
+                          })}
+                          {/* Promedio general */}
+                          <td style={{padding:'8px 8px',textAlign:'center',background:overall!==null?getScoreBg(overall):'rgba(59,130,246,0.04)',borderLeft:'2px solid rgba(0,0,0,0.08)'}}>
+                            {overall!==null?(
+                              <span style={{fontSize:15,fontWeight:900,color:getScoreColor(overall),background:`${getScoreColor(overall)}20`,padding:'4px 12px',borderRadius:8}}>{n2l(overall)}</span>
+                            ):<span style={{color:'#cbd5e1',fontSize:11}}>—</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Footer */}
+              <div style={{padding:'10px 16px',background:'linear-gradient(135deg,#f8fafc,#f1f5f9)',borderTop:'1px solid rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+                <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+  {(()=>{
+    const statsAvgs=stsFiltered.map(s=>{const avgs=comps.map((_comp,ci)=>{const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,_comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,_comp,sc);return typeof cv==='number'?cv:null;}).filter(v=>v!==null);return avgs.length>0?parseFloat((avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1)):null;});
+    const total=stsFiltered.length;
+    const aprobados=statsAvgs.filter(v=>v!==null&&v>=14).length;
+    const proceso=statsAvgs.filter(v=>v!==null&&v>=11&&v<14).length;
+    const riesgo=statsAvgs.filter(v=>v!==null&&v<11).length;
+    const sinNota=statsAvgs.filter(v=>v===null).length;
+    return[
+      {label:'Total',count:total,color:'#93c5fd',icon:'👥'},
+      {label:'Aprobados',count:aprobados,color:'#4ade80',icon:'✅'},
+      {label:'En proceso',count:proceso,color:'#fbbf24',icon:'⚠️'},
+      {label:'En riesgo',count:riesgo,color:'#f87171',icon:'🔴'},
+      sinNota>0&&{label:'Sin nota',count:sinNota,color:'#94a3b8',icon:'—'},
+    ].filter(Boolean).map((s,i)=>(
+      <div key={i} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:20,background:s.color+'20',border:`1px solid ${s.color}40`}}>
+        <span style={{fontSize:11}}>{s.icon}</span>
+        <span style={{fontSize:11,fontWeight:800,color:s.color}}>{s.count}</span>
+        <span style={{fontSize:10,color:'#94a3b8'}}>{s.label}</span>
+      </div>
+    ));
+  })()}
+</div>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {ALL_INSTRS.map(ins=>(
+                    <span key={ins.k} style={{padding:'3px 8px',borderRadius:6,fontSize:9,fontWeight:700,background:ins.bg,color:ins.c}}>{ins.s} {ins.l}</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          );
+        })()
       )}
 
       {/* ══ VISTA: REGISTRO CON CARDS MODERNO ══ */}
@@ -4696,30 +4937,25 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                 </div>
                 {/* Tabs junto al título */}
                 <div style={{display:'flex',gap:6,marginLeft:8}}>
-                  <button onClick={()=>setViewMode('registro')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
-                    background:viewMode==='registro'?'#0374B5':'rgba(255,255,255,0.1)',color:viewMode==='registro'?'#fff':'rgba(255,255,255,0.7)',
-                    boxShadow:viewMode==='registro'?'0 4px 12px rgba(3,116,181,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
-                    ✏️ Registro
+                  <button onClick={()=>setViewMode('excel')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
+                    background:viewMode==='excel'?'#0374B5':'rgba(255,255,255,0.1)',color:viewMode==='excel'?'#fff':'rgba(255,255,255,0.7)',
+                    boxShadow:viewMode==='excel'?'0 4px 12px rgba(3,116,181,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
+                    📋 Registro por Competencias
                   </button>
                   <button onClick={()=>setViewMode('resumen')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
                     background:viewMode==='resumen'?'#10B981':'rgba(255,255,255,0.1)',color:viewMode==='resumen'?'#fff':'rgba(255,255,255,0.7)',
                     boxShadow:viewMode==='resumen'?'0 4px 12px rgba(16,185,129,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
                     📊 Resumen
                   </button>
-                  <button onClick={()=>setViewMode('excel')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
-                    background:viewMode==='excel'?'#F59E0B':'rgba(255,255,255,0.1)',color:viewMode==='excel'?'#fff':'rgba(255,255,255,0.7)',
-                    boxShadow:viewMode==='excel'?'0 4px 12px rgba(245,158,11,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
-                    📋 Excel
-                  </button>
                   <button onClick={()=>{setViewMode('instrumentos');setEditComp(0);setEditCompTab('instrs');}} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
                     background:viewMode==='instrumentos'?'#06B6D4':'rgba(255,255,255,0.1)',color:viewMode==='instrumentos'?'#fff':'rgba(255,255,255,0.7)',
                     boxShadow:viewMode==='instrumentos'?'0 4px 12px rgba(6,182,212,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
-                    🛠 x Comp.
+                    🛠 Instrumentos
                   </button>
                   {curBimUnits.length>0&&<button onClick={()=>{setViewMode('instrconfig');}} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,
                     background:viewMode==='instrconfig'?'#8B5CF6':'rgba(255,255,255,0.1)',color:viewMode==='instrconfig'?'#fff':'rgba(255,255,255,0.7)',
                     boxShadow:viewMode==='instrconfig'?'0 4px 12px rgba(139,92,246,0.4)':'none',transition:'all .2s ease',display:'flex',alignItems:'center',gap:4}}>
-                    📋 x Unidad
+                    📅 Unidad
                   </button>}
                 </div>
               </div>
@@ -4881,7 +5117,6 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                                 <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
                                   <span style={{fontSize:14,fontWeight:800,color:avgColor}}>{n2l(bimCV)}</span>
                                   {sc!=='literal'&&<span style={{fontSize:11,fontWeight:700,color:avgColor,background:`${avgColor}20`,padding:'2px 8px',borderRadius:8}}>{bimCV}</span>}
-                                  {sc==='literal'&&<span style={{fontSize:11,fontWeight:700,color:avgColor,background:`${avgColor}20`,padding:'2px 8px',borderRadius:8}}>{fmtLitVal(bimCV,null,settings?.instrMax)}</span>}
                                 </div>
                               </div>
                             </div>
@@ -5040,7 +5275,7 @@ function StudentProfile({students,subjects,grades,incidents,attendance,gradeDefs
   const[selGid,setSelGid]=useState('');const[selSid,setSelSid]=useState('');const[selStId,setSelStId]=useState('');
   const[activeChart,setActiveChart]=useState('evolution');
   const[profileTab,setProfileTab]=useState('academico');
-  const sc=settings.scaleType||'numeric';
+  const sc=settings.scaleType||'literal';
   const selGrade=availGrades.find(g=>g.id===selGid);
   const availSecs=(selGrade?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
   const stsInSec=students.filter(s=>s.gid===selGid&&s.sid===selSid&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
@@ -6979,7 +7214,7 @@ function Subjects({subjects,onSave,gradeDefs,students,users}){
 // ── CONSOLIDADO ───────────────────────────────────────────
 function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const[pi,setPi]=useState('all');const[fg,setFg]=useState('');const[fs,setFs]=useState('');const sc=settings.scaleType||'numeric';
+  const[pi,setPi]=useState('all');const[fg,setFg]=useState('');const[fs,setFs]=useState('');const sc=settings.scaleType||'literal';
   const hasAssignments=scope.isTeacher&&scope.myGids.length>0;
   const availGrades=hasAssignments?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const selG=availGrades.find(g=>g.id===fg);
@@ -7070,7 +7305,7 @@ function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
 function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
   const availGrades=scope.isTeacher?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
-  const[fGid,setFGid]=useState('');const[fSid,setFSid]=useState('');const[stId,setStId]=useState('');const sc=settings.scaleType||'numeric';
+  const[fGid,setFGid]=useState('');const[fSid,setFSid]=useState('');const[stId,setStId]=useState('');const sc=settings.scaleType||'literal';
   const selG=availGrades.find(g=>g.id===fGid);
   const availSecs=(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
   const stsInSec=students.filter(s=>s.gid===fGid&&s.sid===fSid&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
@@ -7205,6 +7440,7 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
   const[selRow,setSelRow]=useState(null);   // sid del alumno seleccionado
   const[selCol,setSelCol]=useState(null);   // key de estado ('P','T','F','J','PE')
   const[savedFlash,setSavedFlash]=useState(false); // feedback manual save
+  const[searchText,setSearchText]=useState('');   // búsqueda alumno
 
   const selG=availGrades.find(g=>g.id===fg);
   const filt=students.filter(s=>{
@@ -7405,90 +7641,95 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
         )}
       </div>
 
-      {/* ── GRID DE CARDS GIN ── */}
+      {/* ── TABLA EXCEL MODERNA ── */}
       {view==='registro'&&(
         <div>
-        {filt.length>0?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
-              {filt.map((s,i)=>{
-                const cur=getA(s.id);
-                const isSelRow=selRow===s.id;
-                const statusColors={
-                  P:{c:'#10B981',bg:'rgba(16,185,129,0.08)',border:'rgba(16,185,129,0.25)'},
-                  T:{c:'#F59E0B',bg:'rgba(245,158,11,0.08)',border:'rgba(245,158,11,0.25)'},
-                  F:{c:'#EF4444',bg:'rgba(239,68,68,0.08)',border:'rgba(239,68,68,0.25)'},
-                  J:{c:'#3B82F6',bg:'rgba(59,130,246,0.08)',border:'rgba(59,130,246,0.25)'},
-                  PE:{c:'#8B5CF6',bg:'rgba(139,92,246,0.08)',border:'rgba(139,92,246,0.25)'},
-                };
-                const sc=statusColors[cur]||{c:'#64748b',bg:'rgba(100,116,139,0.05)',border:'rgba(100,116,139,0.15)'};
-                return(
-                  <div key={s.id}
-                    onClick={()=>setSelRow(isSelRow?null:s.id)}
-                    style={{
-                      background:isSelRow?'linear-gradient(135deg,rgba(175,36,40,0.06),rgba(255,118,111,0.04))':'linear-gradient(135deg,#fff,rgba(255,255,255,0.95))',
-                      borderRadius:16,
-                      padding:16,
-                      border:`1px solid ${isSelRow?'rgba(175,36,40,0.2)':'rgba(0,0,0,0.06)'}`,
-                      borderLeft:`4px solid ${sc.c}`,
-                      boxShadow:isSelRow?'0 8px 32px rgba(175,36,40,0.1),0 0 0 1px rgba(175,36,40,0.06)':'0 4px 20px rgba(0,0,0,0.04)',
-                      cursor:'pointer',
-                      transition:'all .25s cubic-bezier(.4,0,.2,1)',
-                      animation:`slideUp .3s ease ${i*25}ms both`,
-                      position:'relative',overflow:'hidden'
-                    }}>
-                    <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,#af2428,#ff766f)`}}/>
-                    <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12,marginTop:4}}>
-                      <div style={{position:'relative',flexShrink:0}}>
-                        <Avatar s={s} size={48}/>
-                        <span style={{position:'absolute',bottom:-2,right:-2,width:22,height:22,borderRadius:'50%',background:sc.c,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:900,color:'#fff',border:'2px solid #fff',boxShadow:`0 2px 8px ${sc.c}50`}}>
-                          {cur==='P'?'✓':cur==='T'?'T':cur==='F'?'✕':cur==='J'?'J':'P'}
-                        </span>
-                      </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:700,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'Plus Jakarta Sans,sans-serif'}}>{s.name}</div>
-                        {s.dni&&<div style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{s.dni}</div>}
-                        <div style={{display:'inline-flex',alignItems:'center',gap:4,marginTop:6,padding:'3px 10px',borderRadius:20,background:sc.bg,border:`1px solid ${sc.border}`}}>
-                          <span style={{fontSize:11}}>{ST[cur]?.icon}</span>
-                          <span style={{fontSize:10,fontWeight:700,color:sc.c}}>{ST[cur]?.lbl}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{display:'flex',justifyContent:'center',gap:6}}>
-                      {ST_COLS.map(([k,v])=>{
-                        const isActive=cur===k;
-                        return(
-                          <button key={k} onClick={e=>{e.stopPropagation();handleCellClick(s.id,k);}}
-                            style={{
-                              width:44,height:44,borderRadius:'50%',
-                              border:isActive?`3px solid ${v.c}`:'2px solid #e2e8f0',
-                              background:isActive?v.c:'#f8fafc',
-                              color:isActive?'#fff':v.c,
-                              fontSize:13,fontWeight:800,
-                              cursor:'pointer',
-                              display:'flex',alignItems:'center',justifyContent:'center',
-                              boxShadow:isActive?`0 4px 16px ${v.c}50`:'0 2px 8px rgba(0,0,0,0.04)',
-                              transform:isActive?'scale(1.12)':'scale(1)',
-                              transition:'all .15s cubic-bezier(.4,0,.2,1)',
-                            }}>
-                            {v.l}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Búsqueda */}
+          <div style={{marginBottom:16,display:'flex',gap:8}}>
+            <div style={{flex:1,position:'relative'}}>
+              <input type="text" placeholder="🔍 Buscar por nombre o código..." value={searchText} onChange={e=>setSearchText(e.target.value)}
+                style={{width:'100%',padding:'10px 16px 10px 40px',borderRadius:12,border:'1px solid #ddd',fontSize:13,fontFamily:'inherit',outline:'none',transition:'all .2s'}}
+                onFocus={e=>e.target.style.borderColor='#af2428'}
+                onBlur={e=>e.target.style.borderColor='#ddd'}
+              />
+              <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:14,color:'#999'}}>🔍</span>
+            </div>
+          </div>
+
+          {filt.filter(s=>s.name.toLowerCase().includes(searchText.toLowerCase())||s.dni?.includes(searchText)).length>0?(
+            <div style={{background:'linear-gradient(135deg,#fff,rgba(255,255,255,0.98))',borderRadius:14,overflow:'hidden',boxShadow:'0 8px 32px rgba(0,0,0,0.08)',border:'1px solid rgba(0,0,0,0.06)'}}>
+              <div style={{overflowX:'auto'}}>
+                <table style={{borderCollapse:'collapse',width:'100%',minWidth:'100%'}}>
+                  <thead>
+                    <tr style={{background:'linear-gradient(90deg,#af2428 0%,#ff766f 100%)',borderBottom:'2px solid rgba(0,0,0,0.1)'}}>
+                      <th style={{padding:'14px 8px',textAlign:'center',fontSize:11,fontWeight:800,color:'#fff',position:'sticky',left:0,zIndex:3,width:36,minWidth:36,background:'linear-gradient(90deg,#af2428 0%,#c93a3e 100%)'}}>#</th>
+                      <th style={{padding:'14px 16px',textAlign:'left',fontSize:11,fontWeight:800,color:'#fff',position:'sticky',left:36,zIndex:2,minWidth:220,background:'linear-gradient(90deg,#c93a3e 0%,#ff766f 100%)'}}>👤 ALUMNO</th>
+                      {ST_COLS.map(([k,v])=>(
+                        <th key={k} style={{padding:'14px 10px',textAlign:'center',fontSize:11,fontWeight:800,color:'#fff',background:v.c+'dd',minWidth:70,whiteSpace:'nowrap'}}>
+                          {v.icon}<br/>{v.l}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filt.filter(s=>s.name.toLowerCase().includes(searchText.toLowerCase())||s.dni?.includes(searchText)).map((s,idx)=>{
+                      const cur=getA(s.id);
+                      const isSelRow=selRow===s.id;
+                      const bgRow=isSelRow?'rgba(175,36,40,0.04)':idx%2?'rgba(0,0,0,0.02)':'rgba(255,255,255,1)';
+                      return(
+                        <tr key={s.id} style={{borderBottom:'1px solid rgba(0,0,0,0.06)',background:bgRow,transition:'all .2s'}}>
+                          <td style={{padding:'10px 6px',textAlign:'center',position:'sticky',left:0,zIndex:2,background:bgRow,borderRight:'1px solid rgba(0,0,0,0.04)',fontWeight:700,fontSize:11,color:'#94a3b8',minWidth:36,width:36}}>
+                            {idx+1}
+                          </td>
+                          <td style={{padding:'12px 16px',position:'sticky',left:36,zIndex:1,background:bgRow,borderRight:'1px solid rgba(0,0,0,0.06)',cursor:'pointer'}} onClick={()=>setSelRow(isSelRow?null:s.id)}>
+                            <div style={{display:'flex',alignItems:'center',gap:10}}>
+                              <Avatar s={s} size={32}/>
+                              <div>
+                                <div style={{fontSize:12,fontWeight:700,color:'#1e293b'}}>{s.name}</div>
+                                <div style={{fontSize:10,color:'#94a3b8',marginTop:1}}>{s.dni||'—'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          {ST_COLS.map(([k,v])=>{
+                            const isActive=cur===k;
+                            const isCell=selRow===s.id&&selCol===k;
+                            return(
+                              <td key={k} style={{padding:'8px 6px',textAlign:'center',background:isCell?v.c+'22':isActive?v.bg+'66':'transparent',border:isCell?`2px solid ${v.c}`:`1px solid ${isActive?v.c+'44':'transparent'}`,cursor:'pointer',transition:'all .15s'}}>
+                                <div onClick={()=>handleCellClick(s.id,k)}
+                                  style={{
+                                    width:56,height:56,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:10,
+                                    background:isActive?v.c:'#f0f0f0',
+                                    color:isActive?'#fff':'#999',
+                                    fontSize:18,fontWeight:800,
+                                    cursor:'pointer',
+                                    transform:isActive?'scale(1.08)':'scale(1)',
+                                    boxShadow:isActive?`0 4px 12px ${v.c}44`:'none',
+                                    transition:'all .15s cubic-bezier(.4,0,.2,1)',
+                                    margin:'0 auto'
+                                  }}>
+                                  {v.icon}
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ):(
             <div style={{background:'linear-gradient(135deg,#fff,#f8fafc)',borderRadius:16,padding:60,textAlign:'center',boxShadow:'0 4px 20px rgba(0,0,0,0.04)'}}>
-              <div style={{fontSize:56,marginBottom:12}}>👥</div>
-              <div style={{fontSize:16,fontWeight:700,color:'#64748b',marginBottom:4}}>Sin alumnos para este filtro</div>
-              <div style={{fontSize:12,color:'#94a3b8'}}>Cambia los filtros o selecciona otro grado/sección</div>
+              <div style={{fontSize:56,marginBottom:12}}>🔍</div>
+              <div style={{fontSize:16,fontWeight:700,color:'#64748b',marginBottom:4}}>{searchText?'Sin resultados':'Sin alumnos'}</div>
+              <div style={{fontSize:12,color:'#94a3b8'}}>{searchText?'Intenta con otro término':'Cambia los filtros o selecciona otro grado/sección'}</div>
             </div>
           )}
 
-          <div style={{marginTop:16,textAlign:'center',fontSize:12,color:'#64748b'}}>
-            {periods[bim]} · {fmtDate(date)} · {attendance.filter(a=>a.date===date).length} registros hoy
+          <div style={{marginTop:16,textAlign:'center',fontSize:12,color:'#64748b',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span>{periods[bim]} · {fmtDate(date)} · {filt.length} alumnos</span>
+            <span style={{fontSize:11}}>{attendance.filter(a=>a.date===date).length} registros · {cnts.P||0} presentes</span>
           </div>
         </div>
       )}
@@ -15376,7 +15617,7 @@ const DEFAULT_DOCS=[];
   const[users,setUsers]=useState(()=>{const raw=S.get('v5_us')||DEFAULT_USERS;const seen=new Set();const deduped=(Array.isArray(raw)?raw:[]).filter(u=>{if(!u||!u.username)return false;const uk=u.username.toLowerCase();if(seen.has(uk)){console.warn('Duplicado removido:',u.username);return false;}seen.add(uk);return true;});return deduped;});
   // Cleanup de teacherAssignments huerfanos y duplicados cuando usuarios cambian
   useEffect(()=>{if(!users.length)return;const validIds=new Set(users.map(u=>u.id));let changed=false;const cleanedSubjects=(subjects||[]).map(sub=>{let newTAs=(sub.teacherAssignments||[]).filter(ta=>validIds.has(ta.userId));const seenUserIds=new Set();newTAs=newTAs.filter(ta=>{if(seenUserIds.has(ta.userId)){changed=true;return false;}seenUserIds.add(ta.userId);return true;});const newTeachers=(sub.teachers||[]).filter(tid=>validIds.has(tid));if(newTAs.length!==(sub.teacherAssignments||[]).length)changed=true;if(newTeachers.length!==(sub.teachers||[]).length)changed=true;return{...sub,teacherAssignments:newTAs,teachers:newTeachers};});if(changed){setSubjects(cleanedSubjects);S.set('v5_su',cleanedSubjects);console.log('[EduGest] teacherAssignments limpiados');}},[users]);
-  const[settings,setSettings]=useState(()=>{const base=S.get('v5_se')||{};const defaults={institution:'NUEVA CAJAMARCA',director:'Jorge Chávez Díaz',scaleType:'numeric',year:'2026',roles:ROLES,instrMax:{examen:10,co:10,rub:4,diag:10,obs:10,port:10,anec:10}};return{...defaults,...base,roles:ROLES};});
+  const[settings,setSettings]=useState(()=>{const base=S.get('v5_se')||{};const defaults={institution:'NUEVA CAJAMARCA',director:'Jorge Chávez Díaz',scaleType:'literal',year:'2026',roles:ROLES,instrMax:{examen:10,co:10,rub:4,diag:10,obs:10,port:10,anec:10}};return{...defaults,...base,roles:ROLES};});
   const[normasReg,setNormasReg]=useState(()=>S.get('v5_nr')||[]);
   // Versión de claves diagnósticas — se incrementa cada vez que cambian
   // Fuerza al DiagModal a re-montarse con las claves más recientes
@@ -15628,7 +15869,7 @@ const DEFAULT_DOCS=[];
     if(key==='v5_us'&&Array.isArray(data)){
       const seen=new Set();finalData=data.filter(u=>{if(!u||!u.username)return true;const uk=u.username.toLowerCase();if(seen.has(uk)){console.warn('Duplicado removido al guardar:',u.username);return false;}seen.add(uk);return true;});setter(finalData);S.set(key,finalData);
     } else if(key==='v5_su'&&Array.isArray(data)){
-      const validIds=new Set();try{const us=S.get('v5_us')||[];us.forEach(u=>validIds.add(u.id));}catch{}
+      const validIds=new Set(users.map(u=>u.id));try{const us=S.get('v5_us')||[];us.forEach(u=>validIds.add(u.id));}catch{}
       finalData=data.map(sub=>{let newTAs=(sub.teacherAssignments||[]).filter(ta=>validIds.has(ta.userId));const seenU=new Set();newTAs=newTAs.filter(ta=>{if(seenU.has(ta.userId))return false;seenU.add(ta.userId);return true;});const newTeachers=(sub.teachers||[]).filter(tid=>validIds.has(tid));return{...sub,teacherAssignments:newTAs,teachers:newTeachers};});setter(finalData);S.set(key,finalData);
     } else {setter(data);S.set(key,data);}
     setSaving(true);
