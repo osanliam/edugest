@@ -1461,80 +1461,53 @@ const DEFAULT_USERS=[
   {id:'u8',username:'rolyn.mfht',password:'rolyn74451191',name:'SAAVEDRA SAMAME, Rolyn Moises',role:'teacher',mustChange:true,active:true},
 ];
 
-// ── HELPER: Ámbito del docente ─────────────────────────────
+  // ── HELPER: Ámbito del docente ─────────────────────────────
+// CORREGIDO: Ahora respeta siempre las asignaciones del módulo Usuarios.
+// Prioridad: teacherAssignments (gids+sids) > gids del curso > todos los grados.
+// Si un docente no tiene cursos asignados, su scope queda vacío (no ve alumnos de otro).
 const getTeacherScope=(auth,subjects,gradeDefs,students)=>{
-  if(!auth||auth.role!=='teacher')return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
-  // Cursos donde este docente está asignado
-  let mySubjects=subjects.filter(s=>(s.teachers||[]).includes(auth.id));
-  // Si no tiene cursos asignados explícitamente, buscar en datos guardados (v5_gr)
-  let fallbackGids=[],fallbackSids=[];
-  if(mySubjects.length===0){
-    try{
-      const savedGrades=localStorage.getItem('v5_gr');
-      if(savedGrades){
-        const parsed=JSON.parse(savedGrades);
-        const allSubIds=new Set(subjects.map(s=>s.id));
-        const subjectIds=new Set();
-        const gidSet=new Set();
-        const sidSet=new Set();
-        Object.keys(parsed).forEach(key=>{
-          const parts=key.split('|');
-          if(parts.length>=2){
-            const maybeSubId=parts[1];
-            const maybeStudentId=parts[0];
-            if(allSubIds.has(maybeSubId)){
-              subjectIds.add(maybeSubId);
-              const st=students.find(s=>s.id===maybeStudentId);
-              if(st){gidSet.add(st.gid);sidSet.add(st.sid);}
-            }else if(parts.length>=3&&allSubIds.has(parts[2])){
-              subjectIds.add(parts[2]);
-              const st=students.find(s=>s.id===maybeSubId);
-              if(st){gidSet.add(st.gid);sidSet.add(st.sid);}
-            }
-          }
-        });
-        if(subjectIds.size>0){
-          mySubjects=subjects.filter(s=>subjectIds.has(s.id));
-          fallbackGids=[...gidSet];
-          fallbackSids=[...sidSet];
-        }
-      }
-    }catch{}
-  }
-  // Recopilar grados y secciones específicamente asignados (de teacherAssignments)
+  const isTeacherRole=auth&&['teacher','auxiliar'].includes(auth.role);
+  if(!auth||!isTeacherRole)return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
+  // Cursos donde este docente está asignado (via módulo Usuarios o sección Cursos)
+  const mySubjects=subjects.filter(s=>(s.teachers||[]).includes(auth.id));
   const gidSet=new Set();
   const sidSet=new Set();
   mySubjects.forEach(sub=>{
     const tas=sub.teacherAssignments||[];
     const ta=tas.find(t=>t.userId===auth.id);
-    // Usar teacherAssignment SOLO si tiene gids configurados; si no, usar todos los grados del curso
     if(ta&&(ta.gids||[]).length>0){
+      // Tiene asignación explícita de grados: usar solo esos
       (ta.gids||[]).forEach(g=>gidSet.add(g));
-      (ta.sids||[]).forEach(s=>sidSet.add(s));
-    } else {
-      // fallback: todos los grados del curso
-      if(fallbackGids.length>0){
-        fallbackGids.forEach(g=>gidSet.add(g));
-        fallbackSids.forEach(s=>sidSet.add(s));
+      if((ta.sids||[]).length>0){
+        // Tiene secciones explícitas: usar solo esas
+        (ta.sids||[]).forEach(s=>sidSet.add(s));
       } else {
-        (sub.gids||[]).forEach(g=>{
-          gidSet.add(g);
+        // Grados asignados pero sin secciones → todas las secciones de esos grados
+        (ta.gids||[]).forEach(g=>{
           const gDef=gradeDefs.find(x=>x.id===g);
           (gDef?.secs||[]).forEach(sec=>sidSet.add(sec.id));
         });
       }
+    } else if((sub.gids||[]).length>0){
+      // Sin teacherAssignment: usar grados del curso (fallback)
+      (sub.gids||[]).forEach(g=>{
+        gidSet.add(g);
+        const gDef=gradeDefs.find(x=>x.id===g);
+        (gDef?.secs||[]).forEach(sec=>sidSet.add(sec.id));
+      });
+    } else {
+      // Sin ninguna asignación: fallback a todos los grados disponibles
+      gradeDefs.forEach(g=>{
+        gidSet.add(g.id);
+        (g.secs||[]).forEach(sec=>sidSet.add(sec.id));
+      });
     }
   });
-  // Si aún no tiene cursos, mostrar TODOS
-  if(mySubjects.length===0){mySubjects=subjects;}
   const myGids=[...gidSet];
   const mySids=[...sidSet];
-  // Si no hay grados/secciones asignados, mostrar todos
-  const finalGids=myGids.length>0?myGids:gradeDefs.map(g=>g.id);
-  const finalSids=mySids.length>0?mySids:gradeDefs.flatMap(g=>(g.secs||[]).map(s=>s.id));
-  const myStudentIds=students.filter(s=>finalGids.includes(s.gid)&&finalSids.includes(s.sid)).map(s=>s.id);
-  console.log('DEBUG getTeacherScope:',{mySubjects:mySubjects.length,myGids:finalGids.length,mySids:finalSids.length,myStudentIds:myStudentIds.length,subjects:subjects.length});
-  return{mySubjects,myGids:finalGids,mySids:finalSids,myStudentIds,isTeacher:true};
+  // Solo alumnos que pertenezcan a los grados Y secciones del docente
+  const myStudentIds=students.filter(s=>myGids.includes(s.gid)&&(mySids.length===0||mySids.includes(s.sid))).map(s=>s.id);
+  return{mySubjects,myGids,mySids,myStudentIds,isTeacher:true};
 };
 
 
@@ -1734,6 +1707,7 @@ const ALL_MODULES=[
   {id:'canvas_view',l:'📚 Aula Virtual'},
   {id:'mensajes',l:'💬 Mensajes'},
   {id:'comunidad',l:'🏠 Comunidad'},
+  {id:'usuarios',l:'👥 Usuarios'},
   {id:'docentes',l:'👨‍🏫 Docentes'},
   {id:'grados',l:'🏫 Grados'},
   {id:'alumnos',l:'👨‍🎓 Alumnos'},
@@ -6145,7 +6119,325 @@ function GradosPanel({gradeDefs,students,onSaveGrades}){
   );
 }
 
-// ── ALUMNOS PANEL ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// MÓDULO USUARIOS — Panel unificado (Admin, Director, Subdirector,
+// Docentes, Auxiliares, Alumnos, Padres de Familia)
+// Incluye: gestión de usuarios, asignación de cursos/grados/secciones,
+// códigos MFHF para alumnos, contraseñas y roles
+// ══════════════════════════════════════════════════════════════
+function UsersPanel({users,students,subjects,gradeDefs,onSaveUsers,onSaveStudents,onSaveSubjects,auth}){
+  const ROLE_TABS=[
+    {id:'all',      l:'Todos',       icon:'👥', roles:null},
+    {id:'admin',    l:'Directivos',  icon:'🏫', roles:['admin','director','subdirector']},
+    {id:'teacher',  l:'Docentes',    icon:'👨‍🏫', roles:['teacher','auxiliar']},
+    {id:'student',  l:'Alumnos',     icon:'👨‍🎓', roles:['student']},
+    {id:'parent',   l:'Padres',      icon:'👨‍👩‍👧', roles:['parent']},
+  ];
+  const ROLE_OPTS=[
+    {v:'admin',      l:'Administrador', icon:'🛡️',  col:'#af2428'},
+    {v:'director',   l:'Director',      icon:'👔',  col:'#6b21a8'},
+    {v:'subdirector',l:'Subdirector',   icon:'📋',  col:'#7c3aed'},
+    {v:'teacher',    l:'Docente',       icon:'👨‍🏫', col:'#0891b2'},
+    {v:'auxiliar',   l:'Auxiliar',      icon:'🔧',  col:'#d97706'},
+    {v:'student',    l:'Alumno',        icon:'👨‍🎓', col:'#2563eb'},
+    {v:'parent',     l:'Padre/Madre',   icon:'👨‍👩‍👧', col:'#059669'},
+  ];
+  const[roleTab,setRoleTab]=useState('all');
+  const[search,setSearch]=useState('');
+  const[view,setView]=useState('list');
+  const[editing,setEditing]=useState(null);
+  const[showPwdMap,setShowPwdMap]=useState({});
+  const[showPwdModal,setShowPwdModal]=useState(null);
+  const[customPwd,setCustomPwd]=useState('');
+  const[assignUser,setAssignUser]=useState(null);
+  const[assignExpanded,setAssignExpanded]=useState({});
+  const[selGid,setSelGid]=useState('');
+  const[selSid,setSelSid]=useState('');
+  const emptyForm={name:'',username:'',password:'',email:'',phone:'',dni:'',cargo:'',role:'teacher',active:true,photo:null,code:'',bday:'',parent:'',gid:'',sid:''};
+  const[form,setForm]=useState(emptyForm);
+  const photoRef=useRef();
+  const genPwd=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';let p='';for(let i=0;i<10;i++)p+=c[Math.floor(Math.random()*c.length)];return p;};
+  const uidNew=()=>'u'+Date.now()+Math.random().toString(36).slice(2,7);
+  const genStudentCode=()=>{const existing=[...students,...users].map(s=>s.code||'').filter(c=>/^MFHF\d+$/i.test(c));let maxN=0;existing.forEach(c=>{const n=parseInt(c.replace(/[^0-9]/g,''),10);if(n>maxN)maxN=n;});return'MFHF'+String(maxN+1).padStart(4,'0');};
+  const getRoleInfo=(role)=>ROLE_OPTS.find(r=>r.v===role)||{l:role,icon:'👤',col:'#64748b'};
+  const getGradeName=(gid)=>gradeDefs.find(g=>g.id===gid)?.name||gid;
+  const getSecName=(gid,sid)=>(gradeDefs.find(g=>g.id===gid)?.secs||[]).find(s=>s.id===sid)?.name||sid;
+  const handlePhoto=e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=200;let w=img.width,h=img.height;if(w>h){if(w>M){h=Math.round(h*M/w);w=M;}}else{if(h>M){w=Math.round(w*M/h);h=M;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);setForm(p=>({...p,photo:c.toDataURL('image/jpeg',.75)}));};img.src=ev.target.result;};r.readAsDataURL(file);};
+
+  // Filtrado
+  const tab=ROLE_TABS.find(t=>t.id===roleTab);
+  const filtered=users.filter(u=>{
+    if(tab?.roles&&!tab.roles.includes(u.role))return false;
+    if(search){const s=search.toLowerCase();if(!(u.name||'').toLowerCase().includes(s)&&!(u.username||'').toLowerCase().includes(s)&&!(u.dni||'').toLowerCase().includes(s)&&!(u.code||'').toLowerCase().includes(s))return false;}
+    return true;
+  });
+
+  const openNew=()=>{const defaultRole=tab?.roles?.[0]||'teacher';setEditing(null);setForm({...emptyForm,password:genPwd(),role:defaultRole});setSelGid('');setSelSid('');setView('form');};
+  const openEdit=(u)=>{setEditing(u);setForm({name:u.name||'',username:u.username||'',password:'',email:u.email||'',phone:u.phone||'',dni:u.dni||'',cargo:u.cargo||'',role:u.role||'teacher',active:u.active!==false,photo:u.photo||null,code:u.code||'',bday:u.bday||'',parent:u.parent||'',gid:u.gid||'',sid:u.sid||''});setSelGid(u.gid||'');setSelSid(u.sid||'');setView('form');};
+  const openAssign=(u)=>{setAssignUser(u);setView('assign');};
+  const openPwdModal=(u)=>{setShowPwdModal(u);setCustomPwd('');};
+
+  const saveUser=()=>{
+    if(!form.name.trim())return alert('El nombre es obligatorio');
+    if(!editing&&!form.username.trim())return alert('El usuario es obligatorio');
+    if(!editing&&users.find(u=>u.username===(form.username||'').toLowerCase().trim()))return alert('Ese nombre de usuario ya existe');
+    if(!editing&&!form.password.trim())return alert('La contraseña es obligatoria');
+    const isStudent=form.role==='student';
+    const code=isStudent?(form.code.trim()||genStudentCode()):form.code;
+    if(editing){
+      const updated=users.map(u=>u.id===editing.id?{...u,name:form.name.trim().toUpperCase(),email:form.email,phone:form.phone,dni:form.dni,cargo:form.cargo,role:form.role,active:form.active,...(isStudent?{code,gid:selGid,sid:selSid,bday:form.bday,parent:form.parent}:{}),...(form.photo?{photo:form.photo}:{})}:u);
+      onSaveUsers(updated);
+      if(isStudent){const stRow={id:editing.id,name:form.name.trim().toUpperCase(),dni:form.dni||'',gid:selGid,sid:selSid,bday:form.bday||'',parent:form.parent||'',phone:form.phone||'',photo:form.photo||null,code};if(students.find(s=>s.id===editing.id))onSaveStudents(students.map(s=>s.id===editing.id?{...s,...stRow}:s));else onSaveStudents([...students,stRow]);}
+    }else{
+      const newU={id:uidNew(),name:form.name.trim().toUpperCase(),username:form.username.toLowerCase().trim(),password:form.password,role:form.role,email:form.email||'',phone:form.phone||'',dni:form.dni||'',cargo:form.cargo||'',active:true,mustChange:true,...(isStudent?{code,gid:selGid,sid:selSid,bday:form.bday||'',parent:form.parent||''}:{}),...(form.photo?{photo:form.photo}:{})};
+      onSaveUsers([...users,newU]);
+      if(isStudent&&selGid&&selSid){const stRow={id:newU.id,name:newU.name,dni:newU.dni||'',gid:selGid,sid:selSid,bday:form.bday||'',parent:form.parent||'',phone:form.phone||'',photo:form.photo||null,code};if(!students.find(s=>s.id===newU.id))onSaveStudents([...students,stRow]);}
+    }
+    setView('list');setEditing(null);setForm(emptyForm);setSelGid('');setSelSid('');
+  };
+
+  const deleteUser=(u)=>{
+    if(u.id===auth?.id)return alert('No puedes eliminar tu propia cuenta');
+    if(!window.confirm(`¿Eliminar usuario ${u.name}?\nEsta acción no se puede deshacer.`))return;
+    onSaveUsers(users.filter(x=>x.id!==u.id));
+    if(u.role==='student')onSaveStudents(students.filter(s=>s.id!==u.id));
+  };
+
+  const saveCustomPwd=()=>{if(!customPwd||customPwd.length<6)return alert('La contraseña debe tener al menos 6 caracteres');onSaveUsers(users.map(u=>u.id===showPwdModal.id?{...u,password:customPwd,mustChange:false}:u));setShowPwdModal(null);alert('✅ Contraseña actualizada: '+customPwd);};
+  const resetPwd=(u)=>{const np=genPwd();onSaveUsers(users.map(x=>x.id===u.id?{...x,password:np,mustChange:true}:x));alert('🔑 Nueva contraseña temporal:\n\n'+np+'\n\nEl usuario deberá cambiarla al ingresar.');};
+
+  // Asignación de cursos
+  const toggleSubject=(userId,subId)=>{const updated=subjects.map(s=>{if(s.id!==subId)return s;const ts=s.teachers||[];if(ts.includes(userId))return{...s,teachers:ts.filter(t=>t!==userId),teacherAssignments:(s.teacherAssignments||[]).filter(t=>t.userId!==userId)};return{...s,teachers:[...ts,userId]};});onSaveSubjects(updated);};
+  const toggleGrade=(userId,subId,gid)=>{const updated=subjects.map(s=>{if(s.id!==subId)return s;const tas=s.teacherAssignments||[];const ta=tas.find(t=>t.userId===userId)||{userId,gids:[],sids:[]};const gids=ta.gids.includes(gid)?ta.gids.filter(g=>g!==gid):[...ta.gids,gid];const gDef=gradeDefs.find(g=>g.id===gid);let sids=ta.sids;if(!gids.includes(gid)&&gDef){sids=sids.filter(sid=>!(gDef.secs||[]).find(sec=>sec.id===sid));}const newTa={...ta,gids,sids};const newTas=tas.filter(t=>t.userId!==userId);return{...s,teacherAssignments:[...newTas,newTa]};});onSaveSubjects(updated);};
+  const toggleSection=(userId,subId,gid,secId)=>{const updated=subjects.map(s=>{if(s.id!==subId)return s;const tas=s.teacherAssignments||[];const ta=tas.find(t=>t.userId===userId)||{userId,gids:[],sids:[]};const sids=ta.sids.includes(secId)?ta.sids.filter(x=>x!==secId):[...ta.sids,secId];const gids=ta.gids.includes(gid)?ta.gids:[...ta.gids,gid];const newTa={...ta,gids,sids};const newTas=tas.filter(t=>t.userId!==userId);return{...s,teacherAssignments:[...newTas,newTa]};});onSaveSubjects(updated);};
+
+  // ── VISTA: Asignación de cursos ───────────────────────────
+  if(view==='assign'&&assignUser){
+    const mySubs=subjects.filter(s=>(s.teachers||[]).includes(assignUser.id));
+    return(
+      <div className="fade">
+        <div style={{background:'linear-gradient(135deg,#0374B5,#0ea5e9)',borderRadius:'1.5rem',padding:'20px 28px',marginBottom:20}}>
+          <div style={{display:'flex',alignItems:'center',gap:14}}>
+            <button onClick={()=>setView('list')} style={{width:40,height:40,borderRadius:11,background:'rgba(255,255,255,0.2)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-symbols-outlined" style={{fontSize:20,color:'white'}}>arrow_back</span></button>
+            <div><h2 style={{margin:0,fontSize:20,fontWeight:800,color:'white'}}>Asignación de cursos</h2><p style={{margin:'2px 0 0',fontSize:12,color:'rgba(255,255,255,0.85)'}}>{assignUser.name} · {getRoleInfo(assignUser.role).icon} {getRoleInfo(assignUser.role).l}</p></div>
+          </div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          {subjects.length===0&&<div style={{padding:40,textAlign:'center',color:'var(--t3)'}}>No hay cursos creados. Ve a <b>Cursos</b> para agregar.</div>}
+          {subjects.map(sub=>{
+            const assigned=(sub.teachers||[]).includes(assignUser.id);
+            const ta=(sub.teacherAssignments||[]).find(t=>t.userId===assignUser.id)||{gids:[],sids:[]};
+            const expanded=assignExpanded[sub.id];
+            return(
+              <div key={sub.id} style={{background:'var(--bg2)',border:`2px solid ${assigned?'var(--canvas-primary,#0374B5)':'var(--bd)'}`,borderRadius:14,overflow:'hidden',transition:'border-color .2s'}}>
+                <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 16px'}}>
+                  <div style={{width:40,height:40,borderRadius:11,background:assigned?'rgba(3,116,181,0.12)':'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>📖</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:14,color:'var(--t)'}}>{sub.name}</div>
+                    {sub.area&&<div style={{fontSize:11,color:'var(--t3)'}}>{sub.area}</div>}
+                    {assigned&&ta.gids.length>0&&<div style={{fontSize:11,color:'var(--canvas-primary,#0374B5)',marginTop:2}}>✅ {ta.gids.map(g=>getGradeName(g)).join(', ')}{ta.sids.length>0&&' · Sec: '+ta.sids.map(sid=>{const gid=gradeDefs.find(g=>(g.secs||[]).find(s=>s.id===sid))?.id;return getSecName(gid,sid);}).join(', ')}</div>}
+                    {assigned&&ta.gids.length===0&&<div style={{fontSize:11,color:'var(--warn)'}}>⚠️ Sin grados definidos — verá todos los grados del curso</div>}
+                  </div>
+                  <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                    {assigned&&<button onClick={()=>setAssignExpanded(p=>({...p,[sub.id]:!expanded}))} style={{background:'rgba(3,116,181,0.1)',border:'1px solid rgba(3,116,181,0.3)',color:'var(--canvas-primary,#0374B5)',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:11,fontWeight:700}}>{expanded?'▲ Ocultar':'▼ Grados/Secc'}</button>}
+                    <button onClick={()=>toggleSubject(assignUser.id,sub.id)} style={{background:assigned?'var(--errbg)':'rgba(3,116,181,0.1)',border:assigned?'1px solid var(--err)':'1px solid rgba(3,116,181,0.3)',color:assigned?'var(--err)':'var(--canvas-primary,#0374B5)',borderRadius:8,padding:'4px 12px',cursor:'pointer',fontSize:11,fontWeight:700}}>{assigned?'✖ Quitar':'＋ Asignar'}</button>
+                  </div>
+                </div>
+                {assigned&&expanded&&(
+                  <div style={{background:'var(--bg3)',borderTop:'1px solid var(--bd)',padding:'12px 16px'}}>
+                    <p style={{fontSize:11,fontWeight:700,color:'var(--t2)',margin:'0 0 10px',textTransform:'uppercase',letterSpacing:.5}}>Define exactamente qué grados y secciones enseña:</p>
+                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                      {gradeDefs.map(gDef=>{
+                        const gChecked=ta.gids.includes(gDef.id);
+                        return(
+                          <div key={gDef.id} style={{background:'var(--bg2)',borderRadius:10,padding:'10px 14px',border:`1.5px solid ${gChecked?'rgba(3,116,181,0.4)':'var(--bd)'}`}}>
+                            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:700,fontSize:13,color:'var(--t)'}}>
+                              <input type="checkbox" checked={gChecked} onChange={()=>toggleGrade(assignUser.id,sub.id,gDef.id)} style={{width:16,height:16,cursor:'pointer'}}/>
+                              {gDef.name}
+                              <span style={{fontSize:10,color:'var(--t3)',fontWeight:400}}>({students.filter(s=>s.gid===gDef.id).length} alumnos)</span>
+                            </label>
+                            {gChecked&&(gDef.secs||[]).length>0&&(
+                              <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:8,paddingLeft:24}}>
+                                {(gDef.secs||[]).map(sec=>{
+                                  const sChecked=ta.sids.includes(sec.id);
+                                  return(
+                                    <label key={sec.id} style={{display:'flex',alignItems:'center',gap:5,cursor:'pointer',background:sChecked?'rgba(3,116,181,0.12)':'var(--bg3)',border:`1px solid ${sChecked?'rgba(3,116,181,0.4)':'var(--bd)'}`,borderRadius:7,padding:'4px 10px',fontSize:12,fontWeight:sChecked?700:400}}>
+                                      <input type="checkbox" checked={sChecked} onChange={()=>toggleSection(assignUser.id,sub.id,gDef.id,sec.id)} style={{width:13,height:13,cursor:'pointer'}}/>
+                                      Sección {sec.name}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p style={{fontSize:10,color:'var(--canvas-primary,#0374B5)',margin:'10px 0 0',fontWeight:700}}>💡 El docente SOLO verá los grados/secciones marcados. Sus notas ya guardadas no se pierden.</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{height:24}}/>
+        <Btn v="primary" onClick={()=>setView('list')}>✅ Listo — volver a Usuarios</Btn>
+      </div>
+    );
+  }
+
+  // ── VISTA: Formulario ─────────────────────────────────────
+  if(view==='form'){
+    const ri=getRoleInfo(form.role);
+    const isStudent=form.role==='student';
+    return(
+      <div className="fade">
+        <div style={{background:`linear-gradient(135deg,${ri.col},${ri.col}cc)`,borderRadius:'1.5rem',padding:'20px 28px',marginBottom:20,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
+          <div style={{display:'flex',alignItems:'center',gap:14,position:'relative',zIndex:1}}>
+            <button onClick={()=>{setView('list');setEditing(null);setForm(emptyForm);}} style={{width:40,height:40,borderRadius:11,background:'rgba(255,255,255,0.2)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-symbols-outlined" style={{fontSize:20,color:'white'}}>arrow_back</span></button>
+            <div><h2 style={{margin:0,fontSize:20,fontWeight:800,color:'white'}}>{editing?'Editar':'Nuevo'} Usuario</h2><p style={{margin:'2px 0 0',fontSize:12,color:'rgba(255,255,255,0.85)'}}>{ri.icon} {ri.l}</p></div>
+          </div>
+        </div>
+        <div style={{background:'var(--bg2)',borderRadius:'1.5rem',padding:28,boxShadow:'0 4px 20px rgba(0,0,0,0.08)'}}>
+          <div style={{marginBottom:20}}>
+            <Lbl c="Tipo de usuario / Rol"/>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+              {ROLE_OPTS.map(r=>(
+                <label key={r.v} style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',background:form.role===r.v?r.col+'22':'var(--bg3)',border:`2px solid ${form.role===r.v?r.col:'var(--bd)'}`,borderRadius:10,padding:'6px 14px',transition:'all .15s',fontWeight:form.role===r.v?700:400,fontSize:12,color:form.role===r.v?r.col:'var(--t2)'}}>
+                  <input type="radio" name="urole" value={r.v} checked={form.role===r.v} onChange={()=>setForm(p=>({...p,role:r.v}))} style={{display:'none'}}/>{r.icon} {r.l}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex',justifyContent:'center',marginBottom:20}}>
+            <div style={{position:'relative',cursor:'pointer'}} onClick={()=>photoRef.current?.click()}>
+              {form.photo?<img src={form.photo} alt="" style={{width:80,height:80,borderRadius:'50%',objectFit:'cover',border:'3px solid var(--canvas-primary,#0374B5)'}}/>:<div style={{width:80,height:80,borderRadius:'50%',background:'var(--bg3)',border:'3px dashed var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>📷</div>}
+              <div style={{position:'absolute',bottom:0,right:0,width:26,height:26,borderRadius:'50%',background:'var(--canvas-primary,#0374B5)',display:'flex',alignItems:'center',justifyContent:'center',border:'2px solid var(--bg2)'}}><span className="material-symbols-outlined" style={{fontSize:14,color:'white'}}>edit</span></div>
+            </div>
+            <input ref={photoRef} type="file" accept="image/*" style={{display:'none'}} onChange={handlePhoto}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+            <div style={{gridColumn:'1/-1'}}><Lbl c="Apellidos y nombres *"/><input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="APELLIDOS NOMBRE" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box',textTransform:'uppercase'}}/></div>
+            <div><Lbl c="Usuario (login) *"/><input value={form.username} onChange={e=>setForm(p=>({...p,username:e.target.value}))} placeholder="usuario.mfhf" disabled={!!editing} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:editing?'var(--bg3)':'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box',opacity:editing?.6:1}}/>{editing&&<p style={{fontSize:10,color:'var(--t3)',margin:'3px 0 0'}}>El usuario no se puede cambiar</p>}</div>
+            {!editing&&<div><Lbl c="Contraseña *"/><div style={{display:'flex',gap:6}}><input value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))} placeholder="Contraseña" style={{flex:1,padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/><button onClick={()=>setForm(p=>({...p,password:genPwd()}))} style={{background:'var(--bg3)',border:'1px solid var(--bd)',borderRadius:10,padding:'0 12px',cursor:'pointer',fontSize:11,fontWeight:700,color:'var(--t2)',whiteSpace:'nowrap'}}>🎲 Gen.</button></div></div>}
+            <div><Lbl c="DNI"/><input value={form.dni} onChange={e=>setForm(p=>({...p,dni:e.target.value}))} placeholder="DNI" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>
+            <div><Lbl c="Teléfono"/><input value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="999999999" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>
+            <div><Lbl c="Email"/><input value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="correo@gmail.com" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>
+            {!isStudent&&<div><Lbl c="Cargo / especialidad"/><input value={form.cargo} onChange={e=>setForm(p=>({...p,cargo:e.target.value}))} placeholder="Ej: Comunicación, Matemática" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>}
+            {isStudent&&<>
+              <div><Lbl c="Código de alumno"/><div style={{display:'flex',gap:6}}><input value={form.code} onChange={e=>setForm(p=>({...p,code:e.target.value.toUpperCase()}))} placeholder={genStudentCode()} style={{flex:1,padding:'10px 14px',borderRadius:10,border:'1.5px solid rgba(37,99,235,0.4)',background:'rgba(37,99,235,0.05)',color:'#2563eb',fontSize:13,fontFamily:'Outfit,monospace',fontWeight:700,boxSizing:'border-box'}}/><button onClick={()=>setForm(p=>({...p,code:genStudentCode()}))} style={{background:'rgba(37,99,235,0.1)',border:'1px solid rgba(37,99,235,0.3)',borderRadius:10,padding:'0 10px',cursor:'pointer',fontSize:11,fontWeight:700,color:'#2563eb'}}>Auto</button></div><p style={{fontSize:10,color:'var(--t3)',margin:'3px 0 0'}}>Formato: MFHF0001, MFHF0002…</p></div>
+              <div><Lbl c="Fecha de nacimiento"/><input type="date" value={form.bday} onChange={e=>setForm(p=>({...p,bday:e.target.value}))} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>
+              <div><Lbl c="Apoderado (nombre)"/><input value={form.parent} onChange={e=>setForm(p=>({...p,parent:e.target.value}))} placeholder="Nombre del apoderado" style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/></div>
+              <div><Lbl c="Grado *"/><select value={selGid} onChange={e=>{setSelGid(e.target.value);setSelSid('');}} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}><option value="">— Seleccionar grado —</option>{gradeDefs.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></div>
+              {selGid&&<div><Lbl c="Sección *"/><select value={selSid} onChange={e=>setSelSid(e.target.value)} style={{width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}><option value="">— Seleccionar sección —</option>{(gradeDefs.find(g=>g.id===selGid)?.secs||[]).map(s=><option key={s.id} value={s.id}>Sección {s.name}</option>)}</select></div>}
+            </>}
+          </div>
+          <div style={{marginTop:20,display:'flex',alignItems:'center',gap:10}}><label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}><input type="checkbox" checked={form.active} onChange={e=>setForm(p=>({...p,active:e.target.checked}))} style={{width:16,height:16}}/><span style={{fontSize:13,color:'var(--t)'}}>Usuario activo</span></label></div>
+          <div style={{display:'flex',gap:10,marginTop:24}}>
+            <Btn v="primary" onClick={saveUser} full>💾 Guardar usuario</Btn>
+            <Btn v="ghost" onClick={()=>{setView('list');setEditing(null);setForm(emptyForm);}}>Cancelar</Btn>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── VISTA: Lista principal ────────────────────────────────
+  const counts={all:users.length,admin:users.filter(u=>['admin','director','subdirector'].includes(u.role)).length,teacher:users.filter(u=>['teacher','auxiliar'].includes(u.role)).length,student:users.filter(u=>u.role==='student').length,parent:users.filter(u=>u.role==='parent').length};
+  return(
+    <div className="fade">
+      <div style={{background:'linear-gradient(135deg,#1e3a5f,#0374B5)',borderRadius:'1.5rem',padding:'20px 28px',marginBottom:20,position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:'-30%',right:'-5%',width:220,height:220,background:'rgba(255,255,255,0.07)',borderRadius:'50%'}}/>
+        <div style={{position:'relative',zIndex:1}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
+            <div><h2 style={{margin:0,fontSize:22,fontWeight:800,color:'white',fontFamily:'Outfit,sans-serif'}}>👥 Módulo de Usuarios</h2><p style={{margin:'4px 0 0',fontSize:12,color:'rgba(255,255,255,0.75)'}}>Gestión integral: personal, alumnos, accesos y asignaciones de cursos</p></div>
+            <Btn v="primary" onClick={openNew} style={{background:'rgba(255,255,255,0.2)',border:'1px solid rgba(255,255,255,0.4)',color:'white'}}>＋ Nuevo usuario</Btn>
+          </div>
+          <div style={{display:'flex',gap:12,marginTop:14,flexWrap:'wrap'}}>
+            {[{l:'Total',n:counts.all,i:'👥'},{l:'Directivos',n:counts.admin,i:'🏫'},{l:'Docentes',n:counts.teacher,i:'👨‍🏫'},{l:'Alumnos',n:counts.student,i:'👨‍🎓'},{l:'Padres',n:counts.parent,i:'👨‍👩‍👧'}].map(m=>(
+              <div key={m.l} style={{background:'rgba(255,255,255,0.12)',borderRadius:10,padding:'6px 14px',border:'1px solid rgba(255,255,255,0.2)'}}>
+                <div style={{fontSize:11,color:'rgba(255,255,255,0.7)'}}>{m.i} {m.l}</div>
+                <div style={{fontSize:20,fontWeight:800,color:'white',lineHeight:1.2}}>{m.n}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+        {ROLE_TABS.map(t=>(
+          <button key={t.id} onClick={()=>setRoleTab(t.id)} style={{background:roleTab===t.id?'var(--canvas-primary,#0374B5)':'var(--bg2)',color:roleTab===t.id?'#fff':'var(--t2)',border:roleTab===t.id?'none':'1.5px solid var(--bd)',borderRadius:20,padding:'5px 14px',fontSize:12,fontWeight:roleTab===t.id?700:400,cursor:'pointer',display:'flex',alignItems:'center',gap:5,transition:'all .15s'}}>
+            {t.icon} {t.l} <span style={{background:roleTab===t.id?'rgba(255,255,255,0.25)':'var(--bg3)',borderRadius:10,padding:'1px 6px',fontSize:10}}>{counts[t.id]||0}</span>
+          </button>
+        ))}
+      </div>
+      <div style={{position:'relative',marginBottom:14}}>
+        <span className="material-symbols-outlined" style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',fontSize:18,color:'var(--t3)'}}>search</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre, usuario, DNI o código MFHF..." style={{width:'100%',padding:'10px 14px 10px 38px',borderRadius:12,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit',boxSizing:'border-box'}}/>
+        {search&&<button onClick={()=>setSearch('')} style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--t3)',fontSize:18}}>✕</button>}
+      </div>
+      {filtered.length===0&&<div style={{padding:48,textAlign:'center',color:'var(--t3)'}}><div style={{fontSize:48,marginBottom:12}}>👥</div><p style={{fontSize:16,fontWeight:600,color:'var(--t2)'}}>No hay usuarios{search?' con esa búsqueda':''}</p><Btn v="primary" onClick={openNew} style={{marginTop:12}}>＋ Crear usuario</Btn></div>}
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {filtered.map(u=>{
+          const ri=getRoleInfo(u.role);
+          const mySubs=subjects.filter(s=>(s.teachers||[]).includes(u.id));
+          const isTeacherRole=['teacher','auxiliar','director','subdirector','admin'].includes(u.role);
+          const stuData=students.find(s=>s.id===u.id);
+          return(
+            <div key={u.id} style={{background:'var(--bg2)',border:'1.5px solid var(--bd)',borderRadius:14,padding:'14px 16px',display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+              <div style={{width:44,height:44,borderRadius:12,background:ri.col+'22',border:`2px solid ${ri.col}44`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,overflow:'hidden'}}>
+                {u.photo?<img src={u.photo} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<span style={{fontSize:22}}>{ri.icon}</span>}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
+                  <span style={{fontWeight:700,fontSize:14,color:'var(--t)'}}>{u.name}</span>
+                  <span style={{background:ri.col+'22',color:ri.col,borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>{ri.icon} {ri.l}</span>
+                  {!u.active&&<span style={{background:'var(--errbg)',color:'var(--err)',borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>Inactivo</span>}
+                  {u.mustChange&&<span style={{background:'#fef3c7',color:'#d97706',borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>Debe cambiar pwd</span>}
+                </div>
+                <div style={{display:'flex',gap:10,marginTop:3,flexWrap:'wrap'}}>
+                  <span style={{fontSize:11,color:'var(--t3)'}}>@{u.username}</span>
+                  {u.dni&&<span style={{fontSize:11,color:'var(--t3)'}}>DNI: {u.dni}</span>}
+                  {u.code&&<span style={{fontSize:11,color:'#2563eb',fontWeight:700,fontFamily:'monospace'}}>{u.code}</span>}
+                  {stuData&&<span style={{fontSize:11,color:'var(--t3)'}}>📚 {getGradeName(stuData.gid||u.gid)} · Sec. {getSecName(stuData.gid||u.gid,stuData.sid||u.sid)}</span>}
+                  {isTeacherRole&&mySubs.length>0&&<span style={{fontSize:11,color:'var(--t3)'}}>📖 {mySubs.map(s=>s.name).join(', ')}</span>}
+                  {isTeacherRole&&mySubs.length===0&&<span style={{fontSize:11,color:'var(--warn)'}}>⚠️ Sin cursos asignados — usa 📖 para asignar</span>}
+                  {showPwdMap[u.id]&&<span style={{fontSize:11,color:'var(--ok)',fontFamily:'monospace',background:'var(--bg3)',padding:'1px 6px',borderRadius:4}}>🔑 {u.password}</span>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:6,flexShrink:0,flexWrap:'wrap'}}>
+                {isTeacherRole&&<button onClick={()=>openAssign(u)} title="Asignar cursos" style={{width:34,height:34,borderRadius:9,background:'rgba(3,116,181,0.1)',border:'1px solid rgba(3,116,181,0.25)',color:'#0374B5',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>📖</button>}
+                <button onClick={()=>setShowPwdMap(p=>({...p,[u.id]:!p[u.id]}))} title="Ver/ocultar contraseña" style={{width:34,height:34,borderRadius:9,background:'var(--bg3)',border:'1px solid var(--bd)',color:'var(--t2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>{showPwdMap[u.id]?'🙈':'👁'}</button>
+                <button onClick={()=>openPwdModal(u)} title="Cambiar contraseña" style={{width:34,height:34,borderRadius:9,background:'var(--bg3)',border:'1px solid var(--bd)',color:'var(--t2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>🔑</button>
+                <button onClick={()=>openEdit(u)} title="Editar" style={{width:34,height:34,borderRadius:9,background:'var(--bg3)',border:'1px solid var(--bd)',color:'var(--t2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>✏️</button>
+                {u.id!==auth?.id&&<button onClick={()=>deleteUser(u)} title="Eliminar" style={{width:34,height:34,borderRadius:9,background:'var(--errbg)',border:'1px solid var(--err)',color:'var(--err)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>🗑</button>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {showPwdModal&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:16}}>
+          <div style={{background:'var(--bg2)',borderRadius:20,padding:28,width:'100%',maxWidth:400,boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
+            <h3 style={{margin:'0 0 6px',fontSize:17,fontWeight:800}}>🔑 Cambiar contraseña</h3>
+            <p style={{fontSize:12,color:'var(--t3)',margin:'0 0 16px'}}>{showPwdModal.name}</p>
+            <Lbl c="Nueva contraseña (mín. 6 caracteres)"/>
+            <div style={{display:'flex',gap:8,marginBottom:16}}>
+              <input value={customPwd} onChange={e=>setCustomPwd(e.target.value)} placeholder="Nueva contraseña" style={{flex:1,padding:'10px 14px',borderRadius:10,border:'1.5px solid var(--bd)',background:'var(--bg)',color:'var(--t)',fontSize:13,fontFamily:'inherit'}}/>
+              <button onClick={()=>setCustomPwd(genPwd())} style={{background:'var(--bg3)',border:'1px solid var(--bd)',borderRadius:10,padding:'0 12px',cursor:'pointer',fontSize:11,fontWeight:700,color:'var(--t2)'}}>🎲</button>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="primary" onClick={saveCustomPwd} full>Guardar</Btn>
+              <Btn v="ghost" onClick={()=>setShowPwdModal(null)}>Cancelar</Btn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ALUMNOS PANEL (legacy — mantenido para compatibilidad) ─────
 function AlumnosPanel({gradeDefs,students,onSaveStudents}){
   const[nav,setNav]=useState('lista');
   const[editing,setEditing]=useState(null);
@@ -15615,8 +15907,38 @@ const DEFAULT_DOCS=[];
   const[attendance,setAttendance]=useState(()=>S.get('v5_att')||[]);
   const[gradeDefs,setGradeDefs]=useState(()=>S.get('v5_gd')||DEMO_GD);
   const[users,setUsers]=useState(()=>{const raw=S.get('v5_us')||DEFAULT_USERS;const seen=new Set();const deduped=(Array.isArray(raw)?raw:[]).filter(u=>{if(!u||!u.username)return false;const uk=u.username.toLowerCase();if(seen.has(uk)){console.warn('Duplicado removido:',u.username);return false;}seen.add(uk);return true;});return deduped;});
-  // Cleanup de teacherAssignments huerfanos y duplicados cuando usuarios cambian
-  useEffect(()=>{if(!users.length)return;const validIds=new Set(users.map(u=>u.id));let changed=false;const cleanedSubjects=(subjects||[]).map(sub=>{let newTAs=(sub.teacherAssignments||[]).filter(ta=>validIds.has(ta.userId));const seenUserIds=new Set();newTAs=newTAs.filter(ta=>{if(seenUserIds.has(ta.userId)){changed=true;return false;}seenUserIds.add(ta.userId);return true;});const newTeachers=(sub.teachers||[]).filter(tid=>validIds.has(tid));if(newTAs.length!==(sub.teacherAssignments||[]).length)changed=true;if(newTeachers.length!==(sub.teachers||[]).length)changed=true;return{...sub,teacherAssignments:newTAs,teachers:newTeachers};});if(changed){setSubjects(cleanedSubjects);S.set('v5_su',cleanedSubjects);console.log('[EduGest] teacherAssignments limpiados');}},[users]);
+  // ── Auto-asignar códigos MFHF a alumnos que no tengan código ──
+  useEffect(()=>{
+    const withoutCode=students.filter(s=>!s.code||!/^MFHF\d+$/i.test(s.code));
+    if(!withoutCode.length)return;
+    const allCodes=students.map(s=>s.code||'').filter(c=>/^MFHF\d+$/i.test(c));
+    let maxN=0;allCodes.forEach(c=>{const n=parseInt(c.replace(/[^0-9]/g,''),10);if(n>maxN)maxN=n;});
+    let counter=maxN;
+    const updated=students.map(s=>{
+      if(s.code&&/^MFHF\d+$/i.test(s.code))return s;
+      counter++;
+      return{...s,code:'MFHF'+String(counter).padStart(4,'0')};
+    });
+    setStudents(updated);S.set('v5_st',updated);
+    console.log(`[EduGest] Códigos MFHF asignados a ${withoutCode.length} alumno(s)`);
+  },[students.length]);// Solo cuando cambia la cantidad de alumnos
+
+  // Cleanup de teacherAssignments duplicados — SOLO quita duplicados del mismo userId,
+  // NUNCA filtra por validIds para no borrar asignaciones cuando los usuarios aún no cargaron.
+  useEffect(()=>{
+    if(!subjects.length)return;
+    let changed=false;
+    const cleanedSubjects=(subjects||[]).map(sub=>{
+      const seenUserIds=new Set();
+      const newTAs=(sub.teacherAssignments||[]).filter(ta=>{
+        if(seenUserIds.has(ta.userId)){changed=true;return false;}
+        seenUserIds.add(ta.userId);return true;
+      });
+      if(newTAs.length!==(sub.teacherAssignments||[]).length)changed=true;
+      return changed?{...sub,teacherAssignments:newTAs}:sub;
+    });
+    if(changed){setSubjects(cleanedSubjects);S.set('v5_su',cleanedSubjects);console.log('[EduGest] teacherAssignments deduplicados (sin borrar asignaciones)');}
+  },[subjects.length]);
   const[settings,setSettings]=useState(()=>{const base=S.get('v5_se')||{};const defaults={institution:'NUEVA CAJAMARCA',director:'Jorge Chávez Díaz',scaleType:'literal',year:'2026',roles:ROLES,instrMax:{examen:10,co:10,rub:4,diag:10,obs:10,port:10,anec:10}};return{...defaults,...base,roles:ROLES};});
   const[normasReg,setNormasReg]=useState(()=>S.get('v5_nr')||[]);
   // Versión de claves diagnósticas — se incrementa cada vez que cambian
@@ -15869,8 +16191,16 @@ const DEFAULT_DOCS=[];
     if(key==='v5_us'&&Array.isArray(data)){
       const seen=new Set();finalData=data.filter(u=>{if(!u||!u.username)return true;const uk=u.username.toLowerCase();if(seen.has(uk)){console.warn('Duplicado removido al guardar:',u.username);return false;}seen.add(uk);return true;});setter(finalData);S.set(key,finalData);
     } else if(key==='v5_su'&&Array.isArray(data)){
-      const validIds=new Set(users.map(u=>u.id));try{const us=S.get('v5_us')||[];us.forEach(u=>validIds.add(u.id));}catch{}
-      finalData=data.map(sub=>{let newTAs=(sub.teacherAssignments||[]).filter(ta=>validIds.has(ta.userId));const seenU=new Set();newTAs=newTAs.filter(ta=>{if(seenU.has(ta.userId))return false;seenU.add(ta.userId);return true;});const newTeachers=(sub.teachers||[]).filter(tid=>validIds.has(tid));return{...sub,teacherAssignments:newTAs,teachers:newTeachers};});setter(finalData);S.set(key,finalData);
+      // CRÍTICO: No filtrar por validIds — evita borrar asignaciones en race conditions de carga.
+      // Solo deduplicar teacherAssignments del mismo userId.
+      finalData=data.map(sub=>{
+        const seenU=new Set();
+        const newTAs=(sub.teacherAssignments||[]).filter(ta=>{
+          if(seenU.has(ta.userId))return false;seenU.add(ta.userId);return true;
+        });
+        return{...sub,teacherAssignments:newTAs};
+      });
+      setter(finalData);S.set(key,finalData);
     } else {setter(data);S.set(key,data);}
     setSaving(true);
     if(!window._localWriteTs)window._localWriteTs={};
@@ -16018,8 +16348,7 @@ const DEFAULT_DOCS=[];
     {id:'asistencia',l:'Asistencia',i:'✅',g:'Seguimiento',perm:'attendance'},
     {id:'normas',l:'Normas Convivencia',i:'📜',g:'Seguimiento',perm:'normas'},
     {id:'reportes',l:'Reportes',i:'📑',g:'',perm:'reports'},
-    {id:'alumnos',l:'Alumnos',i:'👨‍🎓',g:'Admin',perm:'students'},
-    {id:'docentes',l:'Personal',i:'👨‍🏫',g:'Admin',perm:'users'},
+    {id:'usuarios',l:'Usuarios',i:'👥',g:'Admin',perm:'users'},
     {id:'subjects',l:'Cursos',i:'📖',g:'Admin',perm:'subjects'},
     {id:'config',l:'Configuración',i:'⚙️',g:'',perm:'config'},
   ];
@@ -16355,6 +16684,7 @@ const DEFAULT_DOCS=[];
           {tab==='asistencia'&&<Asistencia students={students} gradeDefs={gradeDefs} attendance={attendance} onSave={save('v5_att',setAttendance)} settings={settings} onSaveSettings={save('v5_se',setSettings)} subjects={subjects} auth={auth}/>}
           {tab==='normas'&&<NormasConvivencia students={students} gradeDefs={gradeDefs} normasReg={normasReg} onSave={save('v5_nr',setNormasReg)} subjects={subjects} auth={auth}/>}
           {tab==='reportes'&&<PanelDocente students={students} subjects={subjects} grades={grades} attendance={attendance} gradeDefs={gradeDefs} settings={settings} auth={auth}/>}
+          {tab==='usuarios'&&<UsersPanel users={users} students={students} subjects={subjects} gradeDefs={gradeDefs} onSaveUsers={save('v5_us',setUsers)} onSaveStudents={save('v5_st',setStudents)} onSaveSubjects={save('v5_su',setSubjects)} auth={auth}/>}
           {tab==='alumnos'&&<AlumnosPanel gradeDefs={gradeDefs} students={students} onSaveStudents={save('v5_st',setStudents)}/>}
           {tab==='docentes'&&<PanelDocentesEscuela users={users} subjects={subjects} grades={grades} attendance={attendance} normasReg={normasReg} onSaveUsers={save('v5_us',setUsers)} auth={auth}/>}
           {tab==='subjects'&&<Subjects subjects={subjects} onSave={save('v5_su',setSubjects)} gradeDefs={gradeDefs} students={students} users={users}/>}
