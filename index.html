@@ -3734,9 +3734,332 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   /* ────────────────────────────────────────────────────────────────
      📝 Calificaciones.jsx (Grades)
      Registro y gestión de calificaciones por estudiante/asignatura
-     Props: students, subjects, grades, gradeDefs, onSave, settings, auth
-     ──────────────────────────────────────────────────────────────── */
-  function Grades({students,subjects,grades,onSave,gradeDefs,settings,onUpdateSubjects,auth,diagClavesVer=0}){
+Props: students, subjects, grades, gradeDefs, onSave, settings, auth
+      ──────────────────────────────────────────────────────────────── */
+   function PlanillaModal({title,subtitle,instrKey,headers,rows,rowLabels,onSave,onClose,allowEdit=true,comp,students,grades,subId,pi,unitId,ci,slotIdx,gradeDefs,comps,settings}){
+  const [data,setData]=useState(()=>rows.map(r=>[...r]));
+  const [saved,setSaved]=useState(false);
+  const [guardando,setGuardando]=useState(false);
+  const fileInputRef=useRef(null);
+  const isExamen=instrKey==='examen';
+  const isDiag=instrKey==='diag';
+  const isCo=instrKey==='co';
+  const isRub=instrKey==='rub';
+  const examLetters=['A','B','C','D','E'];
+  const rubricaLabels=['C','B','A','AD'];
+  const coOptions=['Sí','No'];
+  const obsOptions=['Logrado','Parcial','No Logrado'];
+  const portOptions=['Presentó','No Presentó'];
+  const anecOptions=['Positivo','Negativo'];
+  const escActOptions=['Siempre','Casi siempre','A veces','Rara vez','Nunca'];
+  const diagOptions=['A','B','C','D'];
+  const getColumnasEval=()=>{
+    if(isExamen)return headers;
+    if(isDiag)return headers;
+    if(isCo)return coOptions;
+    if(isRub)return rubricaLabels;
+    if(isObs)return obsOptions;
+    if(isPort)return portOptions;
+    if(instrKey==='anec')return anecOptions;
+    if(instrKey==='escact')return escActOptions;
+    return headers;
+  };
+  const columnasEval=getColumnasEval();
+  const calcularCalExamen=(respuestas)=>{
+    const gid=students?.[0]?.gid||'';
+    const preguntas=getExamClaves(gid);
+    let correctas=0;
+    respuestas.forEach((r,i)=>{if(r&&r===preguntas[i]?.clave)correctas++;});
+    const total=preguntas.length;
+    const pct=total>0?Math.round((correctas/total)*100):0;
+    return pct>=100?'A':pct>=55?'B':'C';
+  };
+  const calcularCalDiag=(respuestas)=>{
+    const gid=students?.[0]?.gid||'';
+    const claves=getDiagClaves(gid,'lee');
+    let correctas=0;
+    respuestas.forEach((r,i)=>{if(r&&r===claves[i]?.clave)correctas++;});
+    const total=claves.length;
+    const pct=total>0?Math.round((correctas/total)*100):0;
+    if(pct>=90)return'LD';if(pct>=75)return'LE';if(pct>=55)return'P';if(pct>=30)return'I';return'PI';
+  };
+  const calcularCalRubrica=(respuestas)=>{
+    let suma=0,count=0;
+    respuestas.forEach(r=>{const val={C:1,B:2,A:3,AD:4}[r]||0;if(val){suma+=val;count++;}});
+    if(count===0)return'C';
+    const prom=Math.round(suma/count);
+    const map={1:'C',2:'B',3:'A',4:'AD'};
+    return map[Math.min(4,Math.max(1,prom))]||'C';
+  };
+  const calcularCalOtros=(respuestas,positivos)=>{
+    let pos=0;
+    respuestas.forEach(r=>{if(positivos.includes(r))pos++;});
+    const total=respuestas.filter(r=>r).length;
+    const pct=total>0?Math.round((pos/total)*100):0;
+    return pct>=100?'A':pct>=55?'B':'C';
+  };
+  const getAutoCal=(filaResp)=>{
+    if(isExamen)return calcularCalExamen(filaResp);
+    if(isDiag)return calcularCalDiag(filaResp);
+    if(isRub)return calcularCalRubrica(filaResp);
+    if(isCo)return calcularCalOtros(filaResp,['Sí']);
+    if(isObs)return calcularCalOtros(filaResp,['Logrado']);
+    if(instrKey==='port')return calcularCalOtros(filaResp,['Presentó']);
+    if(instrKey==='anec')return calcularCalOtros(filaResp,['Positivo']);
+    if(instrKey==='escact')return calcularCalOtros(filaResp,['Siempre','Casi siempre']);
+    return'C';
+  };
+  const getCalBadgeColor=(cal)=>{
+    if(cal==='AD'||cal==='LD')return{bg:'#D1FAE5',color:'#059669',border:'#10B981'};
+    if(cal==='A'||cal==='LE')return{bg:'#DBEAFE',color:'#2563EB',border:'#3B82F6'};
+    if(cal==='B'||cal==='P')return{bg:'#FEF3C7',color:'#D97706',border:'#F59E0B'};
+    if(cal==='C'||cal==='I')return{bg:'#FEE2E2',color:'#DC2626',border:'#EF4444'};
+    if(cal==='PI')return{bg:'#FEE2E2',color:'#991B1B',border:'#EF4444'};
+    return{bg:'#F1F5F9',color:'#64748B',border:'#CBD5E1'};
+  };
+  const setCell=(ri,ci,val)=>{
+    setData(prev=>{const next=prev.map(r=>[...r]);next[ri][ci]=val;return next;});
+    setSaved(false);
+  };
+  const handleSave=()=>{
+    setGuardando(true);
+    if(onSave){onSave(data);}
+    setSaved(true);
+    setGuardando(false);
+    setTimeout(()=>setSaved(false),2000);
+  };
+  const exportExcel=()=>{
+    if(typeof XLSX!=='undefined'){
+      const wsData=[['#','Alumno',...headers,'Calificación']];
+      data.forEach((row,ri)=>{
+        const cal=getAutoCal(row);
+        wsData.push([ri+1,rowLabels[ri]||'',...row.map(c=>c!==null&&c!==undefined?c:''),cal]);
+      });
+      const ws=XLSX.utils.aoa_to_sheet(wsData);
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'Planilla');
+      const fname=`planilla_${(title||'backup').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb,fname);
+    }else{
+      let html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>td,th{padding:6px 10px;border:1px solid #ccc;font-size:12px}th{background:#0f172a;color:#fff;font-weight:bold}</style></head><body><table>';
+      html+='<thead><tr><th>#</th><th>Alumno</th>'+headers.map(h=>`<th>${h}</th>`).join('')+'<th>Calificación</th></tr></thead><tbody>';
+      data.forEach((row,ri)=>{
+        const cal=getAutoCal(row);
+        html+=`<tr><td>${ri+1}</td><td>${rowLabels[ri]||''}</td>`+row.map(c=>`<td>${c!==null&&c!==undefined?c:''}</td>`).join('')+`<td>${cal}</td></tr>`;
+      });
+      html+='</tbody></table></body></html>';
+      const blob=new Blob([html],{type:'application/vnd.ms-excel'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=`planilla_${(title||'backup').replace(/\s+/g,'_')}.xls`;a.click();URL.revokeObjectURL(url);
+    }
+  };
+  const exportJSON=()=>{
+    const payload={title,subtitle,instrKey,headers,rows:data,rowLabels,exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`planilla_${(title||'backup').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);
+  };
+  const importJSON=(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const parsed=JSON.parse(ev.target.result);
+        if(parsed.rows&&Array.isArray(parsed.rows)){setData(parsed.rows.map(r=>[...r]));alert('✅ Planilla importada. Recuerda guardar.');}
+        else{alert('❌ Formato incorrecto.');}
+      }catch(err){alert('❌ Error al leer JSON.');}
+    };
+    reader.readAsText(file);e.target.value='';
+  };
+  const renderCellDropdown=(ri,ci,currentVal,options)=>(
+    <select value={currentVal} onChange={e=>setCell(ri,ci,e.target.value)}
+      style={{width:'100%',height:'100%',border:'none',padding:'4px 2px',fontSize:11,textAlign:'center',background:'transparent',fontFamily:'inherit',outline:'none',cursor:'pointer',fontWeight:700}}>
+      <option value=""></option>
+      {options.map(opt=>(<option key={opt} value={opt} style={{fontWeight:700}}>{opt}</option>))}
+    </select>
+  );
+  const renderCell=(ri,ci)=>{
+    const val=data[ri]?.[ci]||'';
+    if(!allowEdit)return(<div style={{padding:'8px 6px',textAlign:'center',fontSize:12}}>{val||''}</div>);
+    if(isExamen||isDiag){const opts=isExamen?examLetters:diagOptions;return renderCellDropdown(ri,ci,val,opts);}
+    if(isRub)return renderCellDropdown(ri,ci,val,rubricaLabels);
+    if(isCo)return renderCellDropdown(ri,ci,val,coOptions);
+    if(isObs)return renderCellDropdown(ri,ci,val,obsOptions);
+    if(instrKey==='port')return renderCellDropdown(ri,ci,val,portOptions);
+    if(instrKey==='anec')return renderCellDropdown(ri,ci,val,anecOptions);
+    if(instrKey==='escact')return renderCellDropdown(ri,ci,val,escActOptions);
+    return(<input value={val} onChange={e=>setCell(ri,ci,e.target.value)}
+      style={{width:'100%',height:'100%',border:'none',padding:'8px 6px',fontSize:12,textAlign:'center',background:'transparent',fontFamily:'inherit',outline:'none'}}
+      onFocus={e=>e.currentTarget.style.background='#eef2ff'}
+      onBlur={e=>e.currentTarget.style.background='transparent'}/>);
+  };
+  return(
+    <div style={{position:'fixed',inset:0,background:'var(--modal-overlay,rgba(15,23,42,0.7))',zIndex:1100,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'20px 10px',overflowY:'auto'}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:'var(--bg2)',borderRadius:18,width:'100%',maxWidth:1200,boxShadow:'var(--sh3)',border:'1px solid var(--bd)',display:'flex',flexDirection:'column',maxHeight:'90vh'}}>
+        <div style={{padding:'14px 18px',background:'linear-gradient(135deg,#0f172a,#1e293b)',borderRadius:'18px 18px 0 0',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+          <div>
+            <p style={{margin:0,fontSize:14,fontWeight:800,color:'#fff'}}>📋 {title}</p>
+            {subtitle&&<p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.7)'}}>{subtitle}</p>}
+          </div>
+          <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
+            <button onClick={exportJSON} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📤 JSON</button>
+            <button onClick={exportExcel} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📊 Excel</button>
+            <button onClick={()=>fileInputRef.current?.click()} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📥 Importar</button>
+            <input type="file" accept=".json" ref={fileInputRef} onChange={importJSON} style={{display:'none'}} />
+            {allowEdit&&<button onClick={handleSave} disabled={guardando} style={{padding:'6px 14px',borderRadius:8,fontSize:11,fontWeight:700,cursor:guardando?'not-allowed':'pointer',border:'none',background:guardando?'#6B7280':saved?'#10B981':'#af2428',color:'#fff'}}>{guardando?'⏳ Guardando...':saved?'✅ Guardado':'💾 Guardar todo'}</button>}
+            <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.2)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
+          </div>
+        </div>
+        <div style={{flex:1,overflow:'auto',padding:16}}>
+          <table style={{borderCollapse:'collapse',fontSize:12,minWidth:'max-content',width:'100%'}}>
+            <thead>
+              <tr>
+                <th style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:3,left:0,minWidth:36,textAlign:'center',borderRight:'1px solid rgba(255,255,255,0.1)'}}>#</th>
+                <th style={{padding:'8px 14px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:3,left:36,minWidth:200,textAlign:'left',borderRight:'2px solid rgba(255,255,255,0.15)'}}>Alumno</th>
+                {headers.map((h,i)=>(
+                  <th key={i} style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:2,minWidth:90,textAlign:'center',borderLeft:'1px solid rgba(255,255,255,0.1)'}}>{h}</th>
+                ))}
+                <th style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:2,minWidth:70,textAlign:'center',borderLeft:'2px solid rgba(255,255,255,0.2)'}}>Calif.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row,ri)=>{
+                const bg=ri%2===0?'#ffffff':'#f8fafc';
+                const autoCal=getAutoCal(row);
+                const calColor=getCalBadgeColor(autoCal);
+                return(
+                  <tr key={ri} style={{background:bg}}>
+                    <td style={{padding:'6px 0',textAlign:'center',fontWeight:700,fontSize:11,color:'#64748b',position:'sticky',left:0,background:'inherit',borderRight:'1px solid rgba(0,0,0,0.04)'}}>{ri+1}</td>
+                    <td style={{padding:'8px 14px',fontWeight:700,color:'#1e293b',whiteSpace:'nowrap',position:'sticky',left:36,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)',minWidth:200}}>{rowLabels[ri]||''}</td>
+                    {row.map((cell,ci2)=>{
+                      return(
+                        <td key={`${ri}-${ci2}`} style={{padding:0,borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:90}}>
+                          {renderCell(ri,ci2)}
+                        </td>
+                      );
+                    })}
+                    <td style={{padding:'6px 8px',textAlign:'center',borderLeft:'2px solid rgba(0,0,0,0.06)'}}>
+                      <span style={{display:'inline-block',padding:'3px 10px',borderRadius:20,fontSize:12,fontWeight:900,background:calColor.bg,color:calColor.color,border:`2px solid ${calColor.border}`,transition:'all .2s'}}>{autoCal}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getPlanillaData({students,grades,subId,pi,unitId,ci,instrKey,slotIdx,gradeDefs,comps,settings}){
+  const sts=students;
+  let headers=[];
+  let rows=[];
+  let rowLabels=sts.map(s=>s.name);
+  const comp=comps?.[ci];
+  if(instrKey==='examen'){
+    const gid=sts[0]?.gid||'';
+    const preguntas=getExamClaves(gid);
+    headers=preguntas.map(p=>`P${p.n}`);
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const rawKey=`${slotPfx}|examenraw`;
+      let resp={};
+      try{resp=JSON.parse(grades[rawKey]||'{}');}catch{}
+      return preguntas.map(p=>resp[p.n]||'');
+    });
+  }else if(instrKey==='diag'){
+    const gid=sts[0]?.gid||'';
+    const claves=getDiagClaves(gid,'lee');
+    headers=claves.map(k=>`P${k.n}`);
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const rawKey=`${pfxBase}|diagraw`;
+      let resp={};
+      try{resp=JSON.parse(grades[rawKey]||'{}');}catch{}
+      return claves.map(k=>resp[`P${k.n}`]||'');
+    });
+  }else if(instrKey==='co'){
+    const criterios=comp?.cotCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Item 1','Item 2','Item 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|co|${ri}`]??grades[`${pfxBase}|co|${ri}`];
+        return v===true?'Sí':v===false?'No':v||'';
+      });
+    });
+  }else if(instrKey==='rub'){
+    const criterios=comp?.rubCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Criterio 1','Criterio 2','Criterio 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|rub|${ri}`]??grades[`${pfxBase}|rub|${ri}`];
+        return v||'';
+      });
+    });
+  }else if(instrKey==='obs'){
+    const criterios=comp?.obsCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Observación'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|obs|${ri}`]??grades[`${slotPfx}|obs`]??grades[`${pfxBase}|obs|${ri}`]??grades[`${pfxBase}|obs`]??'';
+        return v||'';
+      });
+    });
+  }else if(instrKey==='port'){
+    headers=['Evidencia 1','Evidencia 2','Evidencia 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      return headers.map((_,ri)=>{
+        const v=grades[`${slotPfx}|port|${ri}`]??grades[`${pfxBase}|port|${ri}`]??'';
+        return v||'';
+      });
+    });
+  }else if(instrKey==='anec'){
+    headers=['Registro'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const val=grades[`${slotPfx}|anec`]??grades[`${pfxBase}|anec`]??'';
+      return [val];
+    });
+  }else if(instrKey==='escact'){
+    const criterios=comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Actitud 1','Actitud 2','Actitud 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|escact|${ri}`]??grades[`${pfxBase}|escact|${ri}`]??'';
+        return v||'';
+      });
+    });
+  }else{
+    headers=['Valor'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const val=grades[`${slotPfx}|${instrKey}`]??grades[`${pfxBase}|${instrKey}`]??'';
+      return [val];
+    });
+  }
+  return {headers,rows,rowLabels};
+}
+
+   function Grades({students,subjects,grades,onSave,gradeDefs,settings,onUpdateSubjects,auth,diagClavesVer=0}){
   // Filtrar por scope del docente
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
   const visSubjects=scope.isTeacher?scope.mySubjects:subjects;
@@ -3945,7 +4268,42 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   }
 
   const[gradesSaved,setGradesSaved]=useState(false);
-  const[viewMode,setViewMode]=useState('registro');// 'registro' | 'resumen'
+  const[viewMode,setViewMode]=useState('registro');// 'registro' | 'resumen' | 'excel'
+  const[planillaModal,setPlanillaModal]=useState(null);
+  const[instrSelectorOpen,setInstrSelectorOpen]=useState(null);
+
+  const[excelSlotCfg,setExcelSlotCfg]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('v5_excel_slots')||'null')||{};}catch{return{};}
+  });
+  const getExcelSlots=(uid,ci)=>excelSlotCfg[subId]?.[uid]?.[ci]||Array(8).fill(null);
+  const setExcelSlot=(uid,ci,slotIdx,instrKey)=>{
+    const cur=getExcelSlots(uid,ci);
+    const upd=[...cur];
+    upd[slotIdx]=instrKey||null;
+    const nextCfg={...excelSlotCfg,[subId]:{...(excelSlotCfg[subId]||{}),[uid]:{...(excelSlotCfg[subId]?.[uid]||{}),[ci]:upd}}};
+    setExcelSlotCfg(nextCfg);
+    localStorage.setItem('v5_excel_slots',JSON.stringify(nextCfg));
+  };
+
+  const getInstrumentStats=(stsF,gradesArg,subIdArg,piArg,ci,instrKey,uid,scArg)=>{
+    const columnValues=stsF.map(st=>{
+      let noteKey;
+      if(uid&&uid!=='__legacy__'){noteKey=`${st.id}|${subIdArg}|${piArg}|${uid}|${ci}|${instrKey}`;}
+      else{noteKey=`${st.id}|${subIdArg}|${piArg}|${ci}|${instrKey}`;}
+      const valor=gradesArg[noteKey];
+      return valor!==undefined&&valor!==null&&valor!==''?valor:null;
+    });
+    const valoresValidos=columnValues.filter(v=>v!==null);
+    const totalAlumnos=stsF.length;
+    const cumplidos=valoresValidos.length;
+    const incumplidos=totalAlumnos-cumplidos;
+    let aprobados=0,enRiesgo=0,criticos=0;
+    valoresValidos.forEach(valor=>{
+      const numVal=typeof valor==='number'?valor:parseFloat(valor)||0;
+      if(numVal>=14){aprobados++;}else if(numVal>=8){enRiesgo++;}else{criticos++;}
+    });
+    return{cumplidos,incumplidos,aprobados,enRiesgo,criticos,totalAlumnos,porcentajeLlenado:totalAlumnos>0?Math.round((cumplidos/totalAlumnos)*100):0};
+  };
   // Competencia seleccionada para vista de cards
   const[selComp,setSelComp]=useState(0);
   // Cuando cambia el curso, seleccionar la primera competencia
@@ -4513,165 +4871,267 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
         );
       })()}
 
-      {/* ══ VISTA: EXCEL MODERNO ══ */}
+      {/* ══ VISTA: REGISTRO POR COMPETENCIAS (EXCEL CON SLOTS) ══ */}
       {comps.length>0&&viewMode==='excel'&&(
-        <div>
-          {/* Header Excel */}
-          <div style={{background:'linear-gradient(135deg,#0C1128 0%,#1C2540 50%,#1e1b4b 100%)',borderRadius:16,padding:'16px 20px',marginBottom:12,boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
-              <div style={{display:'flex',alignItems:'center',gap:14}}>
-                <div style={{width:44,height:44,background:'linear-gradient(135deg,#F59E0B,#D97706)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 16px rgba(245,158,11,0.4)'}}>
-                  <span style={{fontSize:20}}>📋</span>
+        (()=>{
+          const ALL_INSTRS=[
+            {k:'examen',l:'Examen',s:'EX',c:'#EF4444',bg:'#FEE2E2'},
+            {k:'co',l:'Lista Cotejo',s:'CO',c:'#10B981',bg:'#D1FAE5'},
+            {k:'rub',l:'Rúbrica',s:'RB',c:'#8B5CF6',bg:'#EDE9FE'},
+            {k:'diag',l:'Diagnóstico',s:'DG',c:'#F59E0B',bg:'#FEF3C7'},
+            {k:'obs',l:'Observación',s:'OB',c:'#06B6D4',bg:'#E0F2FE'},
+            {k:'port',l:'Portafolio',s:'PO',c:'#0284C7',bg:'#DBEAFE'},
+            {k:'anec',l:'Anecdótico',s:'AN',c:'#7C3AED',bg:'#F5F3FF'},
+            {k:'escact',l:'Esc. Actitudes',s:'EA',c:'#EC4899',bg:'#FCE7F3'},
+          ];
+          const COMP_COLORS=['#3B82F6','#10B981','#F59E0B','#EC4899','#8B5CF6','#06B6D4'];
+          const getInstrVal=(sid,ci,instrKey,slotIdx)=>{
+            const pfxBase=activeUnitId&&activeUnitId!=='__legacy__'?`${sid}|${subId}|${pi}|${activeUnitId}|${ci}`:`${sid}|${subId}|${pi}|${ci}`;
+            const slotPfx=`${pfxBase}|sl${slotIdx}`;
+            return grades[`${slotPfx}|${instrKey}`]??grades[`${pfxBase}|${instrKey}`]??null;
+          };
+          const fmtVal2=(val,instrKey)=>{
+            if(val===null||val===''||val===undefined)return null;
+            if(sc==='literal')return fmtLitVal(val,instrKey,settings?.instrMax);
+            if(sc==='actitudinal')return n2act(val);
+            if(sc==='percent')return n2pct(val)+'%';
+            return typeof val==='number'?val.toFixed(1):val;
+          };
+          const getScoreColor=(v)=>v===null?'#94a3b8':v>=18?'#22C55E':v>=14?'#3B82F6':v>=11?'#F59E0B':'#EF4444';
+          const getScoreBg=(v)=>v===null?'transparent':v>=18?'rgba(34,197,94,0.1)':v>=14?'rgba(59,130,246,0.1)':v>=11?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)';
+
+          return(
+          <div onClick={()=>instrSelectorOpen&&setInstrSelectorOpen(null)}>
+            <div style={{background:'linear-gradient(135deg,#0f172a 0%,#1e293b 100%)',borderRadius:16,padding:'18px 22px',marginBottom:14,boxShadow:'0 8px 32px rgba(0,0,0,0.3)',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:-60,right:-60,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,158,11,0.15) 0%,transparent 70%)'}}/>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12,position:'relative'}}>
+                <div style={{display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <div style={{width:44,height:44,background:'linear-gradient(135deg,#0374B5,#0369a1)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 16px rgba(3,116,181,0.4)'}}>
+                      <span style={{fontSize:20}}>📝</span>
+                    </div>
+                    <div>
+                      <h2 style={{margin:0,fontSize:17,fontWeight:800,color:'#fff',fontFamily:'Plus Jakarta Sans,sans-serif'}}>Registro de Notas</h2>
+                      <p style={{margin:0,fontSize:10,color:'rgba(255,255,255,0.5)'}}>{visSubjects.find(s=>s.id===subId)?.name||'—'} · {(settings.periods||PERIODS)[pi]}{curBimUnits.length>0&&selUnit&&selUnit!=='__legacy__'?' · '+(curBimUnits.find(u=>u.id===selUnit)?.name||''):''}</p>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:5,padding:'4px',background:'rgba(0,0,0,0.2)',borderRadius:12}}>
+                    <button onClick={()=>setViewMode('excel')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,background:viewMode==='excel'?'#fff':'transparent',color:viewMode==='excel'?'#0374B5':'rgba(255,255,255,0.65)',boxShadow:viewMode==='excel'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>📋 Registro por Competencias</button>
+                    <button onClick={()=>setViewMode('resumen')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,background:viewMode==='resumen'?'#fff':'transparent',color:viewMode==='resumen'?'#10B981':'rgba(255,255,255,0.65)',boxShadow:viewMode==='resumen'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>📊 Resumen</button>
+                    <button onClick={()=>{setViewMode('instrumentos');setEditComp(0);setEditCompTab('instrs');}} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,background:viewMode==='instrumentos'?'#fff':'transparent',color:viewMode==='instrumentos'?'#06B6D4':'rgba(255,255,255,0.65)',boxShadow:viewMode==='instrumentos'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>🛠 Instrumentos</button>
+                    {curBimUnits.length>0&&<button onClick={()=>setViewMode('instrconfig')} style={{padding:'6px 13px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:700,fontSize:11,background:viewMode==='instrconfig'?'#fff':'transparent',color:viewMode==='instrconfig'?'#8B5CF6':'rgba(255,255,255,0.65)',boxShadow:viewMode==='instrconfig'?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all .2s ease'}}>📅 Unidad</button>}
+                  </div>
                 </div>
-                <div>
-                  <h2 style={{margin:0,fontSize:18,fontWeight:800,color:'#fff'}}>Vista Excel</h2>
-                  <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.5)'}}>{(settings.periods||PERIODS)[pi]} · {visSubjects.find(s=>s.id===subId)?.name||'—'}</p>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                  {[
+                    {col:'#60a5fa',icon:'📚',node:<select value={subId} onChange={e=>setSubId(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{visSubjects.map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>{s.name}</option>)}</select>},
+                    {col:'#a78bfa',icon:'📅',node:<select value={pi} onChange={e=>setPi(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{(settings.periods||PERIODS).map((p,i)=><option key={i} value={i} style={{color:'#000'}}>{p}</option>)}</select>},
+                    ...(curBimUnits.length>0?[{col:'#22d3ee',icon:'🔷',node:<select value={selUnit} onChange={e=>setSelUnit(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{curBimUnits.map(u=><option key={u.id} value={u.id} style={{color:'#000'}}>{u.name}</option>)}</select>}]:[]),
+                    {col:'#f472b6',icon:'🎓',node:<select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}><option value="" style={{color:'#000'}}>{scopeHasSubs?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}</select>},
+                    {col:'#fbbf24',icon:'👥',node:<select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed'}}><option value="" style={{color:'#000'}}>Secc.</option>{(selGradeObj?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}</select>},
+                  ].map((f,fi)=>(
+                    <div key={fi} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:`${f.col}20`,border:`1px solid ${f.col}50`}}>
+                      <span style={{color:f.col,fontSize:12}}>{f.icon}</span>
+                      {f.node}
+                    </div>
+                  ))}
+                  <div style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)'}}>
+                    <span style={{fontSize:12}}>🔍</span>
+                    <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Buscar..." style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',width:70,outline:'none'}}/>
+                  </div>
                 </div>
-              </div>
-              <div style={{display:'flex',gap:6}}>
-                <button onClick={()=>setViewMode('registro')} style={{padding:'6px 14px',borderRadius:10,border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11,background:'rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.7)'}}>
-                  ← Volver a Registro
-                </button>
               </div>
             </div>
-            {/* Filtros debajo del título */}
-            <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',marginTop:12}}>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(3,116,181,0.2)',border:'1px solid rgba(3,116,181,0.4)'}}>
-                <span style={{color:'#60a5fa',fontWeight:700,fontSize:11}}>📚</span>
-                <select value={subId} onChange={e=>setSubId(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:80}}>
-                  {visSubjects.map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>{s.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(139,92,246,0.2)',border:'1px solid rgba(139,92,246,0.4)'}}>
-                <span style={{color:'#a78bfa',fontWeight:700,fontSize:11}}>📅</span>
-                <select value={pi} onChange={e=>setPi(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  {(settings.periods||PERIODS).map((p,i)=><option key={i} value={i} style={{color:'#000'}}>{p}</option>)}
-                </select>
-              </div>
-              {curBimUnits.length>0&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(6,182,212,0.2)',border:'1px solid rgba(6,182,212,0.4)'}}>
-                <span style={{color:'#22d3ee',fontWeight:700,fontSize:11}}>🔷</span>
-                <select value={selUnit} onChange={e=>setSelUnit(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  {curBimUnits.map(u=><option key={u.id} value={u.id} style={{color:'#000'}}>{u.name}</option>)}
-                </select>
-              </div>}
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(236,72,153,0.2)',border:'1px solid rgba(236,72,153,0.4)'}}>
-                <span style={{color:'#f472b6',fontWeight:700,fontSize:11}}>🎓</span>
-                <select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  <option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>
-                  {availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(245,158,11,0.2)',border:'1px solid rgba(245,158,11,0.4)'}}>
-                <span style={{color:'#fbbf24',fontWeight:700,fontSize:11}}>👥</span>
-                <select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:fSec?'#fff':'rgba(255,255,255,0.5)',fontSize:11,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed',minWidth:50}}>
-                  <option value="" style={{color:'#000'}}>Sec</option>
-                  {(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)'}}>
-                <span style={{color:'#fff',fontWeight:700,fontSize:11}}>🔍</span>
-                <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Buscar..." style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',width:80,outline:'none'}}/>
-              </div>
-            </div>
-          </div>
-          
-          {/* Tabla Excel */}
-          <div style={{background:'white',borderRadius:16,boxShadow:'0 4px 20px rgba(0,0,0,0.1)',overflow:'hidden',marginBottom:16}}>
-            <div style={{overflowX:'auto'}}>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead>
-                  <tr style={{background:'linear-gradient(135deg,#1e293b,#0f172a)'}}>
-                    <th style={{padding:'10px 6px',color:'white',fontWeight:700,textAlign:'left',position:'sticky',left:0,zIndex:3,minWidth:120,background:'#0f172a',borderRight:'2px solid rgba(255,255,255,0.2)'}}>Alumno</th>
-                    {comps.map((comp,ci)=>(
-                      ['examen','co','rub','diag','obs','port','anec'].map((instrKey,instrIdx)=>{
-                        const instrNames={examen:'Examen',co:'Cotejo',rub:'Rúbrica',diag:'Diagn.',obs:'Observ.',port:'Portaf.',anec:'Anecd.'};
-                        const instrColors={examen:'#af2428',co:'#10B981',rub:'#8B5CF6',diag:'#F59E0B',obs:'#06B6D4',port:'#0284C7',anec:'#6D28D9'};
-                        return(
-                          <th key={`${ci}-${instrIdx}`} style={{padding:'4px 1px',color:instrColors[instrKey],fontWeight:700,fontSize:8,textAlign:'center',minWidth:38,borderRight:'1px solid rgba(255,255,255,0.08)',background:'#0f172a'}}>
-                            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
-                              <span>C{ci+1}</span>
-                              <span style={{fontSize:7,opacity:0.8}}>{instrNames[instrKey]}</span>
-                            </div>
-                          </th>
-                        );
-                      })
-                    ))}
-                    <th style={{padding:'6px 2px',color:'#F59E0B',fontWeight:700,textAlign:'center',background:'rgba(245,158,11,0.3)',fontSize:8}}>
-                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
-                        <span>Prom</span>
-                        <span style={{fontSize:7,opacity:0.8}}>General</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stsFiltered.map((s,si)=>{
-                    const rowBg=si%2===0?'#fff':'#f8fafc';
-                    const getInstrKey=(sid,ci,instrKey)=>activeUnitId&&activeUnitId!=='__legacy__'?`${sid}|${subId}|${pi}|${activeUnitId}|${ci}|${instrKey}`:`${sid}|${subId}|${pi}|${ci}|${instrKey}`;
-                    return(
-                      <tr key={s.id} style={{background:rowBg,borderBottom:'1px solid #e5e7eb'}}>
-                        <td style={{padding:'6px 4px',fontWeight:600,position:'sticky',left:0,background:rowBg,zIndex:1,borderRight:'2px solid #e5e7eb'}}>
-                          <div style={{display:'flex',alignItems:'center',gap:4}}>
-                            <div style={{width:20,height:20,borderRadius:'50%',background:'linear-gradient(135deg,#af2428,#ff766f)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:8,fontWeight:800,flexShrink:0}}>
-                              {s.name.split(' ').slice(0,2).map(w=>w[0]).join('')}
-                            </div>
-                            <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:9}}>{s.name}</span>
-                          </div>
-                        </td>
-                        {comps.flatMap((comp,ci)=>{
-                          const instrKeys=['examen','co','rub','diag','obs','port','anec'];
-                          return instrKeys.map((instrKey,instrIdx)=>{
-                            const k=getInstrKey(s.id,ci,instrKey);
-                            const val=grades[k]??null;
-                            const hasData=val!==null&&val!==''&&val!==undefined;
-                            const instrBg=hasData?(instrKey==='examen'?'#fee2e2':instrKey==='co'?'#d1fae5':instrKey==='rub'?'#f3e8ff':instrKey==='diag'?'#fef3c7':instrKey==='obs'?'#e0f2fe':instrKey==='port'?'#f0fdf4':'#f5f3ff'):'#f8fafc';
-                            const instrColor=hasData?(instrKey==='examen'?'#991b1b':instrKey==='co'?'#065f46':instrKey==='rub'?'#6d28d9':instrKey==='diag'?'#92400e':instrKey==='obs'?'#0369a1':instrKey==='port'?'#047857':'#5b21b6'):'#cbd5e1';
+
+            <div style={{background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(0,0,0,0.08)',overflow:'hidden',border:'1px solid rgba(0,0,0,0.06)'}}>
+              <div id="grades-tbl-scroll" style={{overflowX:'auto',overflowY:'visible'}} onScroll={e=>{const o=document.getElementById('grades-stats-scroll');if(o&&o.scrollLeft!==e.target.scrollLeft)o.scrollLeft=e.target.scrollLeft;}}>
+                <table style={{borderCollapse:'collapse',fontSize:11,minWidth:'max-content',width:'100%'}}>
+                  <thead>
+                    <tr>
+                      <th rowSpan={3} style={{padding:'0 10px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:0,zIndex:5,minWidth:36,width:36,borderRight:'1px solid rgba(255,255,255,0.1)',textAlign:'center'}}>#</th>
+                      <th rowSpan={3} style={{padding:'12px 16px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:36,zIndex:5,minWidth:220,borderRight:'2px solid rgba(255,255,255,0.15)',textAlign:'left'}}>ALUMNO</th>
+                      {comps.map((comp,ci)=>(
+                        <th key={ci} colSpan={9} style={{padding:'10px 6px',textAlign:'center',fontSize:11,fontWeight:800,color:'#fff',background:COMP_COLORS[ci%COMP_COLORS.length],borderLeft:'2px solid rgba(255,255,255,0.2)',letterSpacing:.5}}>
+                          C{ci+1}: {comp.name}
+                        </th>
+                      ))}
+                      <th rowSpan={3} style={{padding:'8px 10px',background:'linear-gradient(135deg,#1e3a5f,#1e40af)',color:'#93c5fd',fontSize:10,fontWeight:800,textAlign:'center',minWidth:60,borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
+                        PROM<br/><span style={{fontSize:8,opacity:.7}}>GENERAL</span>
+                      </th>
+                    </tr>
+                    <tr>
+                      {comps.map((comp,ci)=>{
+                        const compCol=COMP_COLORS[ci%COMP_COLORS.length];
+                        return[
+                          <th key={`prom-${ci}`} style={{padding:'8px 6px',background:`${compCol}33`,color:compCol,fontSize:9,fontWeight:800,textAlign:'center',minWidth:70,borderLeft:'2px solid rgba(0,0,0,0.08)',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>
+                            PROM<br/>C{ci+1}
+                          </th>,
+                          ...Array.from({length:8},(_,slotIdx)=>{
+                            const slotKey=getExcelSlots(activeUnitId,ci)[slotIdx];
+                            const instr=slotKey?ALL_INSTRS.find(x=>x.k===slotKey)||null:null;
+                            const stats=instr?getInstrumentStats(stsFiltered,grades,subId,parseInt(pi),ci,slotKey,activeUnitId,sc):null;
+                            const isOpen=instrSelectorOpen?.ci===ci&&instrSelectorOpen?.slot===slotIdx;
                             return(
-                              <td key={`${s.id}-${ci}-${instrIdx}`} 
-                                style={{padding:'4px 1px',textAlign:'center',cursor:'pointer',background:instrBg,border:'1px solid #e5e7eb'}}
-                                onClick={()=>setModal({type:instrKey,sid:s.id,ci})}>
-                                <span style={{fontSize:9,fontWeight:hasData?700:400,color:instrColor}}>
-                                  {hasData?(sc==='literal'?fmtLitVal(val,instrKey,settings?.instrMax):sc==='actitudinal'?n2act(val):sc==='percent'?n2pct(val)+'%':(typeof val==='number'?val.toFixed(1):val)):'—'}
-                                </span>
-                              </td>
+                              <th key={`slot-${ci}-${slotIdx}`}
+                                style={{padding:'4px 2px',background:instr?`${instr.bg}`:'#f8fafc',fontSize:9,fontWeight:700,textAlign:'center',minWidth:70,borderLeft:'1px solid rgba(0,0,0,0.06)',borderBottom:'1px solid rgba(0,0,0,0.06)',position:'relative',cursor:'pointer'}}
+                                onClick={e=>{e.stopPropagation();setInstrSelectorOpen(isOpen?null:{ci,slot:slotIdx});}}>
+                                {instr?(
+                                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                                    <span style={{fontSize:10,fontWeight:800,color:instr.c}}>{instr.s}</span>
+                                    <span style={{fontSize:7,color:instr.c,opacity:.8,whiteSpace:'nowrap'}}>{instr.l}</span>
+                                    {stats&&(
+                                      <div style={{fontSize:6,color:'#64748b',display:'flex',alignItems:'center',gap:1,justifyContent:'center',marginTop:1,paddingTop:2,borderTop:'1px solid rgba(0,0,0,0.08)',width:'100%'}}>
+                                        <span title="Cumplidos">✓{stats.cumplidos}</span>
+                                        <span title="Incumplidos">✗{stats.incumplidos}</span>
+                                      </div>
+                                    )}
+                                    <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
+                                      <button
+                                        style={{padding:'3px 8px',background:instr.c,color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:700,fontSize:10,fontFamily:'inherit',lineHeight:1.2,boxShadow:`0 2px 6px ${instr.c}44`}}
+                                        title="Abrir planilla tipo Excel"
+                                        onClick={e=>{e.stopPropagation();const pd=getPlanillaData({students:stsFiltered,grades,subId,pi,unitId:activeUnitId,ci,instrKey:instr.k,slotIdx,gradeDefs,comps,settings});setPlanillaModal({instrKey:instr.k,ci,slotIdx,title:`Planilla ${instr.l} — ${comp.name}`,subtitle:`${visSubjects.find(s=>s.id===subId)?.name||'—'} · ${(settings.periods||PERIODS)[pi]}${activeUnitId&&activeUnitId!=='__legacy__'?' · '+(curBimUnits.find(u=>u.id===activeUnitId)?.name||''):''}`,...pd});}}>
+                                        📋 Planilla
+                                      </button>
+                                      <button style={{padding:'2px 5px',background:'transparent',color:'#ef4444',border:'none',borderRadius:4,cursor:'pointer',fontSize:12,fontFamily:'inherit',lineHeight:1}} title="Quitar instrumento" onClick={e=>{e.stopPropagation();setExcelSlot(activeUnitId,ci,slotIdx,null);setInstrSelectorOpen(null);}}>×</button>
+                                    </div>
+                                  </div>
+                                ):(
+                                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                                    <span style={{width:22,height:22,borderRadius:'50%',background:'rgba(0,0,0,0.06)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'#94a3b8',fontWeight:700,margin:'0 auto'}}>+</span>
+                                    <span style={{fontSize:7,color:'#94a3b8'}}>Agregar</span>
+                                  </div>
+                                )}
+                                {isOpen&&(
+                                  <div onClick={e=>e.stopPropagation()} style={{position:'absolute',top:'100%',left:'50%',transform:'translateX(-50%)',zIndex:999,background:'#fff',borderRadius:12,boxShadow:'0 16px 48px rgba(0,0,0,0.2)',border:'1px solid rgba(0,0,0,0.08)',padding:10,minWidth:210,marginTop:4}}>
+                                    <p style={{fontSize:10,fontWeight:700,color:'#1e293b',margin:'0 0 8px',paddingBottom:6,borderBottom:'1px solid #f1f5f9'}}>Seleccionar instrumento</p>
+                                    {ALL_INSTRS.map(ins=>{
+                                      const isCurrent=slotKey===ins.k;
+                                      return(
+                                        <div key={ins.k}
+                                          onClick={()=>{setExcelSlot(activeUnitId,ci,slotIdx,isCurrent?null:ins.k);setInstrSelectorOpen(null);}}
+                                          style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,cursor:'pointer',background:isCurrent?ins.bg:'transparent',marginBottom:2,transition:'background .15s'}}
+                                          onMouseEnter={e=>{if(!isCurrent)e.currentTarget.style.background=ins.bg+'88';}}
+                                          onMouseLeave={e=>{if(!isCurrent)e.currentTarget.style.background='transparent';}}>
+                                          <span style={{width:28,height:28,borderRadius:8,background:ins.c,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:11,fontWeight:800,flexShrink:0}}>{ins.s}</span>
+                                          <div style={{flex:1}}>
+                                            <div style={{fontSize:11,fontWeight:700,color:isCurrent?ins.c:'#1e293b'}}>{ins.l}</div>
+                                          </div>
+                                          {isCurrent&&<span style={{fontSize:14}}>✓</span>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </th>
                             );
-                          });
-                        })}
-                        {/* Promedio general */}
-                        {(()=>{
-                          const compAvgs=comps.map((comp,ci)=>{
-                            const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
-                            return typeof cv==='number'?cv:null;
-                          }).filter(v=>v!==null);
-                          const overall=compAvgs.length>0?parseFloat((compAvgs.reduce((a,b)=>a+b,0)/compAvgs.length).toFixed(1)):null;
-                          return(
-                            <td style={{padding:'4px 2px',textAlign:'center',background:overall!==null?(overall>=14?'rgba(34,197,94,0.25)':overall>=11?'rgba(245,158,11,0.25)':'rgba(239,68,68,0.25)'):'rgba(245,158,11,0.1)',border:'1px solid #e5e7eb',borderLeft:'2px solid #e5e7eb'}}>
-                              <span style={{fontSize:10,fontWeight:800,color:overall!==null?(overall>=14?'#22C55E':overall>=11?'#F59E0B':'#EF4444'):'#94a3b8'}}>
-                                {overall!==null?(sc==='literal'?(()=>{const pct=Math.round((overall/20)*100);const lit=pct>=100?'A':pct>=55?'B':'C';return fmtLitPct(lit,pct);})():sc==='actitudinal'?n2act(overall):sc==='percent'?n2pct(overall)+'%':overall.toFixed(1)):'—'}
-                              </span>
-                            </td>
-                          );
-                        })()}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div style={{padding:'8px 12px',background:'#f8fafc',borderTop:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:6}}>
-              <span style={{fontSize:9,color:'#64748b'}}>Total: {stsFiltered.length} alumnos · Clic en celda para editar instrumento</span>
-              <div style={{display:'flex',gap:3}}>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#fee2e2',color:'#991b1b'}}>EX</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#d1fae5',color:'#065f46'}}>CO</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f3e8ff',color:'#6d28d9'}}>RB</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#fef3c7',color:'#92400e'}}>DI</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#e0f2fe',color:'#0369a1'}}>OB</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f0fdf4',color:'#047857'}}>PO</span>
-                <span style={{padding:'2px 6px',borderRadius:4,fontSize:8,fontWeight:700,background:'#f5f3ff',color:'#5b21b6'}}>AN</span>
+                          })
+                        ];
+                      })}
+                    </tr>
+                    <tr>
+                      {comps.flatMap((_,ci)=>[
+                        <td key={`sep-prom-${ci}`} style={{height:3,background:'rgba(0,0,0,0.04)',borderLeft:'2px solid rgba(0,0,0,0.08)'}}/>,
+                        ...Array.from({length:8},(_,si)=>(
+                          <td key={`sep-${ci}-${si}`} style={{height:3,background:'rgba(0,0,0,0.02)',borderLeft:'1px solid rgba(0,0,0,0.04)'}}/>
+                        ))
+                      ])}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stsFiltered.length===0?(
+                      <tr><td colSpan={2+comps.length*9+1} style={{padding:48,textAlign:'center',color:'#94a3b8'}}>
+                        <div style={{fontSize:40,marginBottom:8}}>📭</div>
+                        <div style={{fontSize:14,fontWeight:700}}>Sin alumnos</div>
+                        <div style={{fontSize:12}}>Cambia los filtros de grado/sección</div>
+                      </td></tr>
+                    ):stsFiltered.map((s,si)=>{
+                      const rowBg=si%2===0?'#ffffff':'#f8fafc';
+                      const compAvgs=comps.map((comp,ci)=>{
+                        const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
+                        return typeof cv==='number'?cv:null;
+                      }).filter(v=>v!==null);
+                      const overall=compAvgs.length>0?parseFloat((compAvgs.reduce((a,b)=>a+b,0)/compAvgs.length).toFixed(1)):null;
+                      return(
+                        <tr key={s.id} style={{background:rowBg,borderBottom:'1px solid rgba(0,0,0,0.04)'}}
+                          onMouseEnter={e=>e.currentTarget.style.background=si%2===0?'#f0f9ff':'#e8f4fd'}
+                          onMouseLeave={e=>e.currentTarget.style.background=rowBg}>
+                          <td style={{padding:'10px 0',textAlign:'center',position:'sticky',left:0,zIndex:2,background:'inherit',borderRight:'1px solid rgba(0,0,0,0.04)',fontWeight:700,fontSize:11,color:'#64748b'}}>
+                            {si+1}
+                          </td>
+                          <td style={{padding:'12px 16px',position:'sticky',left:36,zIndex:2,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)',minWidth:220}}>
+                            <div style={{display:'flex',alignItems:'center',gap:10}}>
+                              <div style={{width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#af2428,#ff766f)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:9,fontWeight:800,flexShrink:0}}>
+                                {s.name.split(' ').slice(0,2).map(w=>w[0]).join('')}
+                              </div>
+                              <div>
+                                <div style={{fontSize:12,fontWeight:700,color:'#1e293b',whiteSpace:'nowrap'}}>{s.name}</div>
+                                {s.dni&&<div style={{fontSize:10,color:'#94a3b8'}}>{s.dni}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          {comps.map((comp,ci)=>{
+                            const compCol=COMP_COLORS[ci%COMP_COLORS.length];
+                            const compCV=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);
+                            const activeInstrsList=getExcelSlots(activeUnitId,ci).map(k=>k?ALL_INSTRS.find(x=>x.k===k)||null:null);
+                            return[
+                              <td key={`cv-${ci}`} style={{padding:'8px 6px',textAlign:'center',background:compCV!==null?getScoreBg(compCV):`${compCol}08`,borderLeft:'2px solid rgba(0,0,0,0.08)'}}>
+                                {compCV!==null?(
+                                  <span style={{fontSize:14,fontWeight:900,color:getScoreColor(compCV),background:`${getScoreColor(compCV)}20`,padding:'4px 10px',borderRadius:8}}>{n2l(compCV)}</span>
+                                ):<span style={{color:'#cbd5e1',fontSize:11}}>—</span>}
+                              </td>,
+                              ...Array.from({length:8},(_,slotIdx)=>{
+                                const instr=activeInstrsList[slotIdx];
+                                if(!instr){
+                                  return<td key={`empty-${ci}-${slotIdx}`} style={{background:'#f8fafc',borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:70}}/>;
+                                }
+                                const val=getInstrVal(s.id,ci,instr.k,slotIdx);
+                                const hasData=val!==null&&val!==''&&val!==undefined;
+                                const fv=hasData?fmtVal2(val,instr.k):null;
+                                const numVal=hasData&&typeof val==='number'?val:hasData&&!isNaN(parseFloat(val))?parseFloat(val):null;
+                                return(
+                                  <td key={`instr-${ci}-${slotIdx}`}
+                                    style={{padding:'6px 3px',textAlign:'center',cursor:'pointer',background:hasData?instr.bg+'88':rowBg,borderLeft:'1px solid rgba(0,0,0,0.04)',transition:'background .15s'}}
+                                    onClick={e=>{e.stopPropagation();setModal({type:instr.k,sid:s.id,ci,slotIdx,uid:activeUnitId==='__legacy__'?undefined:activeUnitId});}}
+                                    title={canEditGrades?`Editar ${instr.l}`:`${instr.l} (solo lectura)`}>
+                                    {hasData?(
+                                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                                        <span style={{fontSize:13,fontWeight:800,color:sc==='literal'?instr.c:(numVal?getScoreColor(numVal):instr.c)}}>{fv}</span>
+                                        {!sc||sc!=='literal'?numVal&&<div style={{width:28,height:3,borderRadius:2,background:'#e5e7eb',overflow:'hidden'}}>
+                                          <div style={{height:'100%',width:`${Math.min(100,(numVal/20)*100)}%`,background:getScoreColor(numVal),borderRadius:2}}/>
+                                        </div>:null}
+                                      </div>
+                                    ):(
+                                      <span style={{width:28,height:28,borderRadius:6,border:`1.5px dashed ${instr.c}66`,display:'inline-flex',alignItems:'center',justifyContent:'center',color:instr.c+'88',fontSize:14,fontWeight:700}}>
+                                        {canEditGrades?'✎':'—'}
+                                      </span>
+                                    )}
+                                  </td>
+                                );
+                              })
+                            ];
+                          })}
+                          <td style={{padding:'8px 8px',textAlign:'center',background:overall!==null?getScoreBg(overall):'rgba(59,130,246,0.04)',borderLeft:'2px solid rgba(0,0,0,0.08)'}}>
+                            {overall!==null?(
+                              <span style={{fontSize:15,fontWeight:900,color:getScoreColor(overall),background:`${getScoreColor(overall)}20`,padding:'4px 12px',borderRadius:8}}>{n2l(overall)}</span>
+                            ):<span style={{color:'#cbd5e1',fontSize:11}}>—</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{padding:'10px 16px',background:'linear-gradient(135deg,#f8fafc,#f1f5f9)',borderTop:'1px solid rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                  {ALL_INSTRS.map(ins=>(
+                    <span key={ins.k} style={{padding:'3px 8px',borderRadius:6,fontSize:9,fontWeight:700,background:ins.bg,color:ins.c}}>{ins.s} {ins.l}</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          );
+        })()
       )}
 
       {/* ══ VISTA: REGISTRO CON CARDS MODERNO ══ */}
@@ -7063,6 +7523,143 @@ function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
         </div>
       ))}
     </div>
+    {/* Planilla Modal */}
+    {planillaModal&&(
+      <PlanillaModal
+        title={planillaModal.title}
+        subtitle={planillaModal.subtitle}
+        instrKey={planillaModal.instrKey}
+        headers={planillaModal.headers}
+        rows={planillaModal.rows}
+        rowLabels={planillaModal.rowLabels}
+        comp={comps?.[planillaModal.ci]}
+        students={stsFiltered}
+        grades={grades}
+        subId={subId}
+        pi={pi}
+        unitId={activeUnitId}
+        ci={planillaModal.ci}
+        slotIdx={planillaModal.slotIdx}
+        gradeDefs={gradeDefs}
+        comps={comps}
+        settings={settings}
+        onClose={()=>setPlanillaModal(null)}
+        onSave={(newRows)=>{
+          const ng={...grades};
+          const ci=planillaModal.ci;
+          const comp=comps?.[ci];
+          newRows.forEach((row,ri)=>{
+            const s=stsFiltered[ri];
+            if(!s)return;
+            const pfxBase=activeUnitId&&activeUnitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${activeUnitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+            const slotPfx=`${pfxBase}|sl${planillaModal.slotIdx||0}`;
+            if(planillaModal.instrKey==='examen'){
+              const gid=s.gid||'';
+              const preguntas=getExamClaves(gid);
+              const resp={};
+              row.forEach((val,ci2)=>{if(preguntas[ci2])resp[preguntas[ci2].n]=val;});
+              const hasAny=row.some(v=>v&&v.trim()!=='');
+              if(hasAny){
+                ng[`${slotPfx}|examenraw`]=JSON.stringify(resp);
+                const aciertos=preguntas.filter(p=>resp[p.n]===p.clave).length;
+                ng[`${slotPfx}|examen`]=examNota(aciertos);
+              }else{
+                delete ng[`${slotPfx}|examenraw`];
+                delete ng[`${slotPfx}|examen`];
+              }
+            }else if(planillaModal.instrKey==='diag'){
+              const gid=s.gid||'';
+              const claves=getDiagClaves(gid,'lee');
+              const resp={};
+              row.forEach((val,ci2)=>{if(claves[ci2])resp[`P${claves[ci2].n}`]=val;});
+              const hasAny=row.some(v=>v&&v.trim()!=='');
+              if(hasAny){
+                ng[`${pfxBase}|diagraw`]=JSON.stringify(resp);
+                const aciertos=claves.filter(k=>resp[`P${k.n}`]===k.clave).length;
+                ng[`${pfxBase}|diag`]=diagNota(aciertos,claves.length);
+              }else{
+                delete ng[`${pfxBase}|diagraw`];
+                delete ng[`${pfxBase}|diag`];
+              }
+            }else if(planillaModal.instrKey==='co'){
+              const criterios=comp?.cotCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:0);
+              let checked=0;
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|co|${ri2}`;
+                if(val==='Sí'){ng[k]=true;checked++;hasAny=true;}
+                else if(val==='No'){ng[k]=false;hasAny=true;}
+                else{delete ng[k];}
+              }
+              const n=criterios.length||numItems;
+              if(hasAny&&n>0){
+                const sc2=parseFloat(((checked/n)*20).toFixed(1));
+                ng[`${slotPfx}|co`]=sc2;
+              }else{delete ng[`${slotPfx}|co`];}
+            }else if(planillaModal.instrKey==='rub'){
+              const criterios=comp?.rubCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:0);
+              const vals=[];
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|rub|${ri2}`;
+                if(val){ng[k]=val;vals.push(val);hasAny=true;}
+                else{delete ng[k];}
+              }
+              if(hasAny&&vals.length>0){
+                const sum=vals.reduce((a,v)=>{
+                  const num=v==='AD'?17:v==='A'?14:v==='B'?11:v==='C'?5:parseFloat(v)||0;
+                  return a+num;
+                },0);
+                ng[`${slotPfx}|rub`]=Math.round(sum/vals.length);
+              }else{delete ng[`${slotPfx}|rub`];}
+            }else if(planillaModal.instrKey==='obs'){
+              const criterios=comp?.obsCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:1);
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|obs|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              }
+              if(!hasAny){
+                delete ng[`${slotPfx}|obs`];
+                for(let ri2=0;ri2<numItems;ri2++)delete ng[`${slotPfx}|obs|${ri2}`];
+              }
+            }else if(planillaModal.instrKey==='port'){
+              let hasAny=false;
+              row.forEach((val,ri2)=>{
+                const k=`${slotPfx}|port|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              });
+              if(!hasAny){delete ng[`${slotPfx}|port`];}
+            }else if(planillaModal.instrKey==='anec'){
+              const val=row[0]||'';
+              if(val)ng[`${slotPfx}|anec`]=val;
+              else delete ng[`${slotPfx}|anec`];
+            }else if(planillaModal.instrKey==='escact'){
+              let hasAny=false;
+              row.forEach((val,ri2)=>{
+                const k=`${slotPfx}|escact|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              });
+              if(!hasAny){delete ng[`${slotPfx}|escact`];}
+            }else{
+              const val=row[0]||'';
+              if(val)ng[`${slotPfx}|${planillaModal.instrKey}`]=val;
+              else delete ng[`${slotPfx}|${planillaModal.instrKey}`];
+            }
+          });
+          onSave(ng);
+        }}
+      />
+    )}
   </div>);
 }
 
