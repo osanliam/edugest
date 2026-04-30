@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="referrer" content="no-referrer"/>
 <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;"/> -->
-<title>EduGest v42.29 · IE MFHF · Academic Atelier</title>
+<title>EduGest v43.29 · IE MFHF · Modern Academy v43</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -19,24 +19,24 @@
 <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js" crossorigin="anonymous"></script>
 <style>
 /* ══════════════════════════════════════════════════════════
-    EduGest v42.29 · Academic Atelier Design System
+    EduGest v43.29 · Modern Academy v43 Design System
     "The Curated Scholastic Gallery"
    ══════════════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0}
 
 :root{
   /* ════════════════════════════════════════════════════════
-     Academic Atelier Color System - IE MFHF
+     Modern Academy v43 Color System - IE MFHF
      ════════════════════════════════════════════════════════ */
   
   /* ── Primary brand (red metallics) ── */
-  --r:#af2428;--r2:#9e161e;--r3:#ff766f;--r4:#ffefed;
+  --r:#6366F1;--r2:#4f46e5;--r3:#818cf8;--r4:#eef2ff;
   
   /* ── Secondary (gold/amber) ── */
-  --y:#705900;--y2:#fdd34d;--y3:#fff2d4;--y4:#675200;
+  --y:#7C3AED;--y2:#d8b4fe;--y3:#f3e8ff;--y4:#6d28d9;
   
   /* ── Tertiary (teal) ── */
-  --cyan:#006381;--cyan2:#81d4fa;--cyan3:#e5f5ff;
+  --cyan:#10B981;--cyan2:#a7f3d0;--cyan3:#e5f5ff;
   
   /* ── Surface hierarchy (no-line rule) ── */
   --surface:#f7f6f6;
@@ -111,7 +111,7 @@
   /* ── Modal (use for overlays) ── */
   --modal-overlay:rgba(45,47,47,0.5);
   
-  /* ── Glass (Academic Atelier glassmorphism) ── */
+  /* ── Glass (Modern Academy v43 glassmorphism) ── */
   --glass-bg:rgba(255,255,255,0.7);
   --glass-bd:rgba(255,255,255,0.5);
   --glass-blur:blur(16px);
@@ -122,7 +122,7 @@
          radial-gradient(ellipse 60% 40% at 50% 100%,rgba(240,241,241,0.08) 0%,transparent 70%);
 }
 
-/* ── Dark mode (Academic Atelier) ── */
+/* ── Dark mode (Modern Academy v43) ── */
 body.dark{
   --surface:#0d0e0f;
   --surface-low:#141414;
@@ -164,7 +164,7 @@ body{
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ── Inputs (no border, ghost border on focus - Academic Atelier) ── */
+/* ── Inputs (no border, ghost border on focus - Modern Academy v43) ── */
 input,select,textarea{
   padding:10px 16px;height:44px;
   border:none;
@@ -188,13 +188,13 @@ select option{background:var(--surface-lowest);color:var(--t)}
 button{font-family:inherit;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1)}
 button:active{transform:scale(0.98)}
 
-/* ── Scrollbar (thin, subtle - Academic Atelier) ── */
+/* ── Scrollbar (thin, subtle - Modern Academy v43) ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--surface-highest);border-radius:10px}
 ::-webkit-scrollbar-thumb:hover{background:var(--t3)}
 
-/* ── Cards (no-line, tonal layering - Academic Atelier) ── */
+/* ── Cards (no-line, tonal layering - Modern Academy v43) ── */
 .card{
   background:var(--surface-lowest);
   border-radius:24px;
@@ -204,7 +204,7 @@ button:active{transform:scale(0.98)}
 .card-hover,.card-interactive{transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s;cursor:pointer;}
 .card-hover:hover,.card-interactive:hover{transform:translateY(-4px);box-shadow:var(--sh3);}
 
-/* ── Glass card (Academic Atelier glassmorphism) ── */
+/* ── Glass card (Modern Academy v43 glassmorphism) ── */
 .glass{
   background:rgba(255,255,255,0.7)!important;
   backdrop-filter:blur(16px)!important;
@@ -221,7 +221,7 @@ body.dark .glass{background:rgba(45,47,47,0.75)!important;backdrop-filter:blur(1
 .stat-grd{border-top:2px solid transparent!important;background-clip:padding-box;position:relative}
 .stat-grd::before{content:'';position:absolute;top:-2px;left:0;right:0;height:2px;background:var(--grd2);border-radius:2px 2px 0 0}
 
-/* ── Typography (Academic Atelier: Plus Jakarta Sans for headlines) ── */
+/* ── Typography (Modern Academy v43: Plus Jakarta Sans for headlines) ── */
 h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;letter-spacing:-0.3px;}
 
 /* ── Chip / Badge (rounded-full for youthful energy) ── */
@@ -245,7 +245,7 @@ h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;letter-spaci
 @keyframes modal-in{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .pulse{animation:pulse 1.4s infinite}
 
-/* ── Sidebar nav item (Academic Atelier) ── */
+/* ── Sidebar nav item (Modern Academy v43) ── */
 .nav-item{position:relative;overflow:hidden;border-radius:12px;transition:all .2s ease;}
 .nav-item::before{
   content:'';position:absolute;inset:0;
@@ -258,7 +258,7 @@ h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;letter-spaci
   box-shadow:inset 3px 0 0 var(--r),0 4px 16px rgba(175,36,40,0.08);
 }
 
-/* ── Tab pills (rounded-full for youthful energy - Academic Atelier) ── */
+/* ── Tab pills (rounded-full for youthful energy - Modern Academy v43) ── */
 .tab-pill{
   display:inline-flex!important;align-items:center!important;justify-content:center!important;
   height:40px!important;padding:0 20px!important;border-radius:9999px!important;
@@ -405,13 +405,22 @@ body.dark .dm-toggle-knob{transform:translateX(20px);}
   border-right:1px solid rgba(255,255,255,0.04);
 }
 
+/* ── Bottom Navigation Bar v43 ── */
+.bottom-nav-v43{display:none;position:fixed;bottom:0;left:0;right:0;height:70px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-bd);z-index:8001;}
+.bottom-nav-v43-items{display:flex;justify-content:space-around;align-items:center;height:70px;padding:0 8px;}
+.bottom-nav-item-v43{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 12px;border-radius:12px;cursor:pointer;transition:all 0.2s ease;color:var(--t2);font-size:11px;font-weight:600;flex:1;}
+.bottom-nav-item-v43:hover{background:rgba(99,102,241,0.1);color:var(--r);}
+.bottom-nav-item-v43.active{background:rgba(99,102,241,0.15);color:var(--r);}
+
 /* ── Responsive ── */
 @media(max-width:768px){
+  .bottom-nav-v43{display:flex!important;}
   #sb{position:fixed!important;left:0;top:0;height:100%;z-index:8000;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
   #sb.open{transform:translateX(0)!important;box-shadow:4px 0 40px rgba(0,0,0,0.4);}
   .toolbar-row{gap:6px;}
-  #toast-container{bottom:16px;right:12px;left:12px;max-width:none;}
+  #toast-container{bottom:80px;right:12px;left:12px;max-width:none;}
   .toast{min-width:0;}
+  body{padding-bottom:70px;}
 }
 @media(max-width:480px){
   .export-bar{padding:8px 12px;}
@@ -1015,7 +1024,7 @@ setTimeout(function(){window.SoundSystem.init();},100);
 /* ════════════════════════════════════════════════════════════════════════════════
    🏗️ ESTRUCTURA VIRTUAL DE CARPETAS
    
-   Este archivo contiene toda la aplicación EduGest v42 organizada por carpetas
+   Este archivo contiene toda la aplicación EduGest v43 organizada por carpetas
    virtuales siguiendo la estructura moderna de desarrollo:
    
    src/
@@ -1030,7 +1039,7 @@ setTimeout(function(){window.SoundSystem.init();},100);
    └── Schemas Base44    ← Definiciones de datos
    
    Generado: 2026-03-23
-   Versión: EduGest v42 - Refactorizado
+   Versión: EduGest v43 - Refactorizado
    Estado: 100% Funcional - Misma que original
    ════════════════════════════════════════════════════════════════════════════════ */
 
@@ -1162,7 +1171,7 @@ const S={
 // O déjalo vacío — el sistema funciona igual en modo offline
 const CLOUD_CFG_KEY='edugest_cloud_cfg';
 // ── Versión del archivo (incrementar con cada actualización) ─
-const APP_VERSION = '41.5';  // ← CAMBIA ESTE NÚMERO CADA VEZ QUE ACTUALICES EL HTML
+const APP_VERSION = '42.33';  // ← CAMBIA ESTE NÚMERO CADA VEZ QUE ACTUALICES EL HTML
 const LAST_VERSION_KEY = 'edugest_app_version';
 
 // Detectar si el archivo fue actualizado (versión nueva vs localStorage)
@@ -1183,7 +1192,7 @@ const TURSO_HARDCODED={
 };
 
 // MODO LOCAL - desactiva sincronización con Turso para evitar sobrecarga
-const LOCAL_MODE=true;
+const LOCAL_MODE=false;
 
 const getCloudCfg=()=>{
   if(LOCAL_MODE)return null;
@@ -1350,35 +1359,101 @@ const getInstrAvgInc=(subjId,ci,instrK)=>{
 };
 
 // Nota de una competencia en una UNIDAD específica
+// CORREGIDO: Ahora SOLO usa la nota de rúbrica si existe, no promedios vigesimales
 const unitCompScore=(grades,sid,subid,pi,uid,ci,comp,sc)=>{
   const p=uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`;
-  const instrOrder=['diag','rub','co','examen','obs','port','anec','escact','auto'];
+
+  // PRIORIDAD 1: Buscar rúbrica (es la fuente de verdad)
+  const rubKey=p+'|rub';
+  if(grades[rubKey]!==undefined){
+    const rubVal=grades[rubKey];
+    if(rubVal!==null&&rubVal!==''){
+      if(typeof rubVal==='string'&&rubVal.includes(',')){
+        return rubLevel(rubVal.split(','));
+      }else if(Array.isArray(rubVal)){
+        return rubLevel(rubVal);
+      }
+    }
+  }
+
+  // Buscar en slots de rúbrica
+  for(let slot=0;slot<8;slot++){
+    const slotK=`${p}|sl${slot}|rub`;
+    if(grades[slotK]!==undefined){
+      const rubVal=grades[slotK];
+      if(rubVal!==null&&rubVal!==''){
+        if(typeof rubVal==='string'&&rubVal.includes(',')){
+          return rubLevel(rubVal.split(','));
+        }else if(Array.isArray(rubVal)){
+          return rubLevel(rubVal);
+        }
+      }
+    }
+  }
+
+  // PRIORIDAD 2: Si no hay rúbrica, usar otros instrumentos
+  const instrOrder=['co','examen','obs','port','anec','escact','auto'];
   for(const ik of instrOrder){
     const k=ik==='escact'?'escact|'+p:p+'|'+ik;
     if(grades[k]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[k];
-    // Buscar en slots (0-7) si no encuentra directamente
+    // Buscar en slots (0-7)
     for(let slot=0;slot<8;slot++){
       const slotK=ik==='escact'?`escact|${p}|sl${slot}`:`${p}|sl${slot}|${ik}`;
       if(grades[slotK]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[slotK];
     }
   }
+
+  // FALLBACK: Calcular desde capacidades
   const vals=(comp.caps||[]).map((_,ri)=>grades[`${p}|${ri}`]??null);
   return calcProp(vals,sc);
 };
 
 // Nota de una competencia sin unidad (compatibilidad con datos viejos)
+// CORREGIDO: Ahora SOLO usa rúbrica como fuente de verdad, no promedios vigesimales
 const legacyCompScore=(grades,sid,subid,pi,ci,comp,sc)=>{
   const p=`${sid}|${subid}|${pi}|${ci}`;
-  const instrOrder=['diag','rub','co','examen','obs','port','anec','escact','auto'];
+
+  // PRIORIDAD 1: Buscar rúbrica (es la fuente de verdad)
+  const rubKey=p+'|rub';
+  if(grades[rubKey]!==undefined){
+    const rubVal=grades[rubKey];
+    if(rubVal!==null&&rubVal!==''){
+      if(typeof rubVal==='string'&&rubVal.includes(',')){
+        return rubLevel(rubVal.split(','));
+      }else if(Array.isArray(rubVal)){
+        return rubLevel(rubVal);
+      }
+    }
+  }
+
+  // Buscar en slots de rúbrica
+  for(let slot=0;slot<8;slot++){
+    const slotK=`${p}|sl${slot}|rub`;
+    if(grades[slotK]!==undefined){
+      const rubVal=grades[slotK];
+      if(rubVal!==null&&rubVal!==''){
+        if(typeof rubVal==='string'&&rubVal.includes(',')){
+          return rubLevel(rubVal.split(','));
+        }else if(Array.isArray(rubVal)){
+          return rubLevel(rubVal);
+        }
+      }
+    }
+  }
+
+  // PRIORIDAD 2: Si no hay rúbrica, usar otros instrumentos
+  const instrOrder=['co','examen','obs','port','anec','escact','auto'];
   for(const ik of instrOrder){
     const k=ik==='escact'?`escact|${p}`:`${p}|${ik}`;
     if(grades[k]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[k];
-    // Buscar en slots (0-7) si no encuentra directamente
+    // Buscar en slots (0-7)
     for(let slot=0;slot<8;slot++){
       const slotK=ik==='escact'?`escact|${p}|sl${slot}`:`${p}|sl${slot}|${ik}`;
       if(grades[slotK]!==undefined&&getInstrAvgInc(subid,ci,ik))return grades[slotK];
     }
   }
+
+  // FALLBACK: Calcular desde capacidades
   const vals=(comp.caps||[]).map((_,ri)=>grades[`${sid}|${subid}|${pi}|${ci}|${ri}`]??null);
   return calcProp(vals,sc);
 };
@@ -1418,11 +1493,23 @@ const studentAvg=(grades,sid,subjects,sc,allBimUnits)=>{
 };
 
 // Helper: obtener bimUnits de localStorage para un curso+bimestre
-const getBimUnits=(subid,pi)=>{
-  try{const all=JSON.parse(localStorage.getItem('v5_bim_units')||'null')||{};return all[subid]?.[pi]||[];}catch{return[];}
+const getBimUnits=(subid,pi,includeInactive=false)=>{
+  try{
+    const all=JSON.parse(localStorage.getItem('v5_bim_units')||'null')||{};
+    const units=all[subid]?.[pi]||[];
+    return includeInactive?units:units.filter(u=>u.active!==false);
+  }catch{return[];}
 };
-const getAllBimUnits=(subid)=>{
-  try{const all=JSON.parse(localStorage.getItem('v5_bim_units')||'null')||{};return all[subid]||{};}catch{return{};}
+const getAllBimUnits=(subid,includeInactive=false)=>{
+  try{
+    const all=JSON.parse(localStorage.getItem('v5_bim_units')||'null')||{};
+    const byPi=all[subid]||{};
+    if(includeInactive)return byPi;
+    // filtrar unidades inactivas en cada bimestre
+    const filtered={};
+    Object.entries(byPi).forEach(([pi,units])=>{filtered[pi]=(units||[]).filter(u=>u.active!==false);});
+    return filtered;
+  }catch{return{};}
 };
 
 // Demo data
@@ -1466,10 +1553,15 @@ const DEFAULT_USERS=[
 // Prioridad: teacherAssignments (gids+sids) > gids del curso > todos los grados.
 // Si un docente no tiene cursos asignados, su scope queda vacío (no ve alumnos de otro).
 const getTeacherScope=(auth,subjects,gradeDefs,students)=>{
-  const isTeacherRole=auth&&['teacher','auxiliar'].includes(auth.role);
-  if(!auth||!isTeacherRole)return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
-  // Cursos donde este docente está asignado (via módulo Usuarios o sección Cursos)
+  // Admin y director ven todo sin restricciones
+  if(!auth)return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
+  if(auth.role==='admin'||auth.role==='director')return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
+  // Roles que usan scope restringido: teacher, auxiliar, subdirector
+  // TAMBIÉN: cualquier usuario que tenga cursos asignados en subjects.teachers[]
   const mySubjects=subjects.filter(s=>(s.teachers||[]).includes(auth.id));
+  // Si no tiene ningún curso asignado Y no es docente → ver todo (sin restricción)
+  const isTeacherRole=['teacher','auxiliar','subdirector'].includes(auth.role);
+  if(!isTeacherRole&&mySubjects.length===0)return{mySubjects:null,myGids:null,mySids:null,myStudentIds:null,isTeacher:false};
   const gidSet=new Set();
   const sidSet=new Set();
   mySubjects.forEach(sub=>{
@@ -1496,11 +1588,8 @@ const getTeacherScope=(auth,subjects,gradeDefs,students)=>{
         (gDef?.secs||[]).forEach(sec=>sidSet.add(sec.id));
       });
     } else {
-      // Sin ninguna asignación: fallback a todos los grados disponibles
-      gradeDefs.forEach(g=>{
-        gidSet.add(g.id);
-        (g.secs||[]).forEach(sec=>sidSet.add(sec.id));
-      });
+      // Sin ninguna asignación de grados: no agregar nada
+      // El docente solo verá alumnos de los grados explícitamente asignados
     }
   });
   const myGids=[...gidSet];
@@ -1633,7 +1722,7 @@ function Login({users,onLogin,onUpdateUsers}){
                 <span className="material-symbols-outlined" style={{fontSize:28,color:'white'}}>school</span>
               </div>
               <div>
-                <h1 style={{fontSize:22,fontWeight:800,color:'#af2428',fontStyle:'italic',fontFamily:'Plus Jakarta Sans,sans-serif',letterSpacing:'-0.5px',margin:0}}>Academic Atelier</h1>
+                <h1 style={{fontSize:22,fontWeight:800,color:'#af2428',fontStyle:'italic',fontFamily:'Plus Jakarta Sans,sans-serif',letterSpacing:'-0.5px',margin:0}}>Modern Academy v43</h1>
                 <p style={{fontSize:10,fontWeight:700,color:'#5a5c5c',textTransform:'uppercase',letterSpacing:'0.15em',margin:0}}>EduGest · MFHF</p>
               </div>
             </div>
@@ -2064,6 +2153,25 @@ const examNota=(aciertos)=>{
 };
 const examNivel=(aciertos,total=10)=>{const pct=(aciertos/total)*100;if(pct>=100)return'A';if(pct>=55)return'B';return'C';};
 
+// ── FUNCIONES AUXILIARES PARA RESUMEN DETALLADO DE RESPUESTAS ──
+const getRespuestasExamen=(sid,subid,pi,uid,ci,slotIdx,preguntas)=>{
+  const pfx=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
+  const examRawKey=`${pfx}|examraw`;
+  try{
+    const resp=JSON.parse(localStorage.getItem(examRawKey)||'{}');
+    return Object.keys(resp).map(n=>({n:parseInt(n),resp:resp[n]}));
+  }catch{return[];}
+};
+
+const getDiagRespuestas=(sid,subid,pi,uid,ci,slotIdx,tipo)=>{
+  const pfx=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
+  const diagRawKey=`${pfx}|diagraw`;
+  try{
+    const resp=JSON.parse(localStorage.getItem(diagRawKey)||'{}');
+    return resp;
+  }catch{return{};}
+};
+
 // ── MODAL EVALUACIÓN DIAGNÓSTICA ──────────────────────────
 function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, gradeDefs, auth, slotIdx}){
   const tipo=diagTipo(compName);
@@ -2081,7 +2189,7 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
   const[clavesEdit,setClavesEdit]=useState(()=>getDiagClaves(stGid,tipo));
 
   const saveClaves=()=>{
-    if(auth?.role!=='admin'&&auth?.role!=='director')return;
+    if(auth?.role!=='admin'&&auth?.role!=='director'&&auth?.role!=='teacher'&&auth?.role!=='subdirector')return;
     saveDiagClaves(stGid,tipo,clavesEdit,auth);
     setClaves(clavesEdit);
     setEditMode(false);
@@ -2091,18 +2199,9 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
     setClavesEdit(JSON.parse(JSON.stringify(def)));
   };
 
-  // Cargar respuestas existentes
-  const initResp=()=>{
-    try{
-      if(grades[diagRawKey])return JSON.parse(grades[diagRawKey]);
-      if(slotIdx!=null){
-        const legacyPfx=uid?`${st.id}|${subid}|${pi}|${uid}|${ci}`:`${st.id}|${subid}|${pi}|${ci}`;
-        if(grades[`${legacyPfx}|diagraw`])return JSON.parse(grades[`${legacyPfx}|diagraw`]);
-      }
-      return{};
-    }catch{return{};}
-  };
-  const[resp,setResp]=useState(initResp);
+  // IMPORTANTE: Siempre empieza COMPLETAMENTE VACÍO
+  // Ignorar completamente cualquier dato existente en 'grades'
+  const[resp,setResp]=useState({});
   const[saved,setSaved]=useState(false);
 
   const setR=(key,val)=>setResp(p=>({...p,[key]:val}));
@@ -2126,7 +2225,8 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
     ng[diagRawKey]=JSON.stringify(resp);
     onSave(ng);
     setSaved(true);
-    setTimeout(()=>{setSaved(false);onClose();},900);
+    // Cierra después de guardar
+    setTimeout(()=>onClose(),800);
   };
 
   const limpiar=()=>{
@@ -2172,7 +2272,7 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
             <p style={{margin:0,fontSize:11,color:'var(--t2)'}}>{st.name} · <b>{gradeName}</b> · {total} {esLee?'ítems':'criterios'}</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            {(auth?.role==='admin'||auth?.role==='director')&&(
+            {(auth?.role==='admin'||auth?.role==='director'||auth?.role==='teacher'||auth?.role==='subdirector')&&(
               <button onClick={()=>{setEditMode(e=>!e);setClavesEdit(JSON.parse(JSON.stringify(claves)));}}
                 style={{padding:'4px 10px',borderRadius:8,fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',
                   border:'1px solid var(--r)',background:editMode?'var(--r3)':'transparent',color:'var(--r)'}}>
@@ -2185,8 +2285,8 @@ function DiagModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose, g
           </div>
         </div>
 
-        {/* MODO EDITOR DE CLAVES — solo admin/director */}
-        {editMode&&(auth?.role==='admin'||auth?.role==='director')&&(
+        {/* MODO EDITOR DE CLAVES — solo admin/director/teacher/subdirector */}
+        {editMode&&(auth?.role==='admin'||auth?.role==='director'||auth?.role==='teacher'||auth?.role==='subdirector')&&(
           <div style={{padding:16}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
               <div>
@@ -2452,7 +2552,8 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
     ng[examRawKey]=JSON.stringify(resp);
     onSave(ng);
     setSaved(true);
-    setTimeout(()=>{setSaved(false);onClose();},900);
+    // Cierra después de guardar
+    setTimeout(()=>onClose(),800);
   };
 
   const limpiar=()=>{
@@ -2486,7 +2587,7 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
                 ↺ Restaurar 10 preguntas
               </button>
             )}
-            {(auth?.role==='admin'||auth?.role==='director')&&(
+            {(auth?.role==='admin'||auth?.role==='director'||auth?.role==='teacher'||auth?.role==='subdirector')&&(
               <button onClick={()=>{setEditMode(e=>!e);setPreguntasEdit(JSON.parse(JSON.stringify(preguntas)));}}
                 style={{padding:'4px 10px',borderRadius:8,fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',
                   border:'1px solid white',background:editMode?'white':'transparent',color:editMode?'#af2428':'white'}}>
@@ -2499,8 +2600,8 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
           </div>
         </div>
 
-        {/* MODO EDITOR DE PREGUNTAS — solo admin/director */}
-        {editMode&&(auth?.role==='admin'||auth?.role==='director')&&(
+        {/* MODO EDITOR DE PREGUNTAS — solo admin/director/teacher/subdirector */}
+        {editMode&&(auth?.role==='admin'||auth?.role==='director'||auth?.role==='teacher'||auth?.role==='subdirector')&&(
           <div style={{padding:16,maxHeight:'70vh',overflowY:'auto'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
               <div>
@@ -2652,8 +2753,367 @@ function ExamenModal({st, subid, pi, uid, ci, compName, grades, onSave, onClose,
   );
 }
 
+// ── PLANILLA MODAL — hoja de cálculo tipo-aware con auto-cálculo ───
+function PlanillaModal({title,subtitle,instrKey,headers,rows,rowLabels,onSave,onClose,allowEdit=true,comp,students,grades,subId,pi,unitId,ci,slotIdx,gradeDefs,comps,settings}){
+  const [data,setData]=useState(()=>rows.map(r=>[...r]));
+  const [saved,setSaved]=useState(false);
+  const [guardando,setGuardando]=useState(false);
+  const fileInputRef=useRef(null);
 
+  const isExamen=instrKey==='examen';
+  const isDiag=instrKey==='diag';
+  const isCo=instrKey==='co';
+  const isRub=instrKey==='rub';
+  const isObs=instrKey==='obs';
+  const isPort=instrKey==='port';
+  const isAnec=instrKey==='anec';
+  const isEscAct=instrKey==='escact';
+  const isNotaNumerica=false;
 
+  const examLetters=['A','B','C','D','E'];
+  const rubricaLabels=['C','B','A','AD'];
+  const coOptions=['Sí','No'];
+  const obsOptions=['Logrado','Parcial','No Logrado'];
+  const portOptions=['Presentó','No Presentó'];
+  const anecOptions=['Positivo','Negativo'];
+  const escActOptions=['Siempre','Casi siempre','A veces','Rara vez','Nunca'];
+  const diagOptions=['A','B','C','D'];
+
+  const getColumnasEval=()=>{
+    if(isExamen)return headers;
+    if(isDiag)return headers;
+    if(isCo)return coOptions;
+    if(isRub)return rubricaLabels;
+    if(isObs)return obsOptions;
+    if(isPort)return portOptions;
+    if(isAnec)return anecOptions;
+    if(isEscAct)return escActOptions;
+    return headers;
+  };
+  const columnasEval=getColumnasEval();
+
+  const calcularCalExamen=(respuestas)=>{
+    const gid=students?.[0]?.gid||'';
+    const preguntas=getExamClaves(gid);
+    let correctas=0;
+    respuestas.forEach((r,i)=>{if(r&&r===preguntas[i]?.clave)correctas++;});
+    const total=preguntas.length;
+    const pct=total>0?Math.round((correctas/total)*100):0;
+    return pct>=100?'A':pct>=55?'B':'C';
+  };
+
+  const calcularCalDiag=(respuestas)=>{
+    const gid=students?.[0]?.gid||'';
+    const claves=getDiagClaves(gid,'lee');
+    let correctas=0;
+    respuestas.forEach((r,i)=>{if(r&&r===claves[i]?.clave)correctas++;});
+    const total=claves.length;
+    const pct=total>0?Math.round((correctas/total)*100):0;
+    if(pct>=90)return'LD';if(pct>=75)return'LE';if(pct>=55)return'P';if(pct>=30)return'I';return'PI';
+  };
+
+  const calcularCalRubrica=(respuestas)=>{
+    let suma=0,count=0;
+    respuestas.forEach(r=>{const val={C:1,B:2,A:3,AD:4}[r]||0;if(val){suma+=val;count++;}});
+    if(count===0)return'C';
+    const prom=Math.round(suma/count);
+    const map={1:'C',2:'B',3:'A',4:'AD'};
+    return map[Math.min(4,Math.max(1,prom))]||'C';
+  };
+
+  const calcularCalOtros=(respuestas,positivos)=>{
+    let pos=0;
+    respuestas.forEach(r=>{if(positivos.includes(r))pos++;});
+    const total=respuestas.filter(r=>r).length;
+    const pct=total>0?Math.round((pos/total)*100):0;
+    return pct>=100?'A':pct>=55?'B':'C';
+  };
+
+  const getAutoCal=(filaResp)=>{
+    if(isExamen)return calcularCalExamen(filaResp);
+    if(isDiag)return calcularCalDiag(filaResp);
+    if(isRub)return calcularCalRubrica(filaResp);
+    if(isCo)return calcularCalOtros(filaResp,['Sí']);
+    if(isObs)return calcularCalOtros(filaResp,['Logrado']);
+    if(isPort)return calcularCalOtros(filaResp,['Presentó']);
+    if(isAnec)return calcularCalOtros(filaResp,['Positivo']);
+    if(isEscAct)return calcularCalOtros(filaResp,['Siempre','Casi siempre']);
+    return'C';
+  };
+
+  const setCell=(ri,ci,val)=>{
+    setData(prev=>{
+      const next=prev.map(r=>[...r]);
+      next[ri][ci]=val;
+      return next;
+    });
+    setSaved(false);
+  };
+
+  const getCalBadgeColor=(cal)=>{
+    if(cal==='AD'||cal==='LD')return{bg:'#D1FAE5',color:'#059669',border:'#10B981'};
+    if(cal==='A'||cal==='LE')return{bg:'#DBEAFE',color:'#2563EB',border:'#3B82F6'};
+    if(cal==='B'||cal==='P')return{bg:'#FEF3C7',color:'#D97706',border:'#F59E0B'};
+    if(cal==='C'||cal==='I')return{bg:'#FEE2E2',color:'#DC2626',border:'#EF4444'};
+    if(cal==='PI')return{bg:'#FEE2E2',color:'#991B1B',border:'#EF4444'};
+    return{bg:'#F1F5F9',color:'#64748B',border:'#CBD5E1'};
+  };
+
+  const handleSave=()=>{
+    setGuardando(true);
+    if(onSave){
+      onSave(data);
+    }
+    setSaved(true);
+    setGuardando(false);
+    setTimeout(()=>setSaved(false),2000);
+  };
+
+  const exportExcel=()=>{
+    if(typeof XLSX!=='undefined'){
+      const wsData=[['#','Alumno',...headers,'Calificación']];
+      data.forEach((row,ri)=>{
+        const cal=getAutoCal(row);
+        wsData.push([ri+1,rowLabels[ri]||'',...row.map(c=>c!==null&&c!==undefined?c:''),cal]);
+      });
+      const ws=XLSX.utils.aoa_to_sheet(wsData);
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'Planilla');
+      const fname=`planilla_${(title||'backup').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb,fname);
+    }else{
+      let html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>td,th{padding:6px 10px;border:1px solid #ccc;font-size:12px}th{background:#0f172a;color:#fff;font-weight:bold}</style></head><body><table>';
+      html+='<thead><tr><th>#</th><th>Alumno</th>'+headers.map(h=>`<th>${h}</th>`).join('')+'<th>Calificación</th></tr></thead><tbody>';
+      data.forEach((row,ri)=>{
+        const cal=getAutoCal(row);
+        html+=`<tr><td>${ri+1}</td><td>${rowLabels[ri]||''}</td>`+row.map(c=>`<td>${c!==null&&c!==undefined?c:''}</td>`).join('')+`<td>${cal}</td></tr>`;
+      });
+      html+='</tbody></table></body></html>';
+      const blob=new Blob([html],{type:'application/vnd.ms-excel'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=`planilla_${(title||'backup').replace(/\s+/g,'_')}.xls`;a.click();URL.revokeObjectURL(url);
+    }
+  };
+
+  const exportJSON=()=>{
+    const payload={title,subtitle,instrKey,headers,rows:data,rowLabels,exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`planilla_${(title||'backup').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);
+  };
+
+  const importJSON=(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const parsed=JSON.parse(ev.target.result);
+        if(parsed.rows&&Array.isArray(parsed.rows)){setData(parsed.rows.map(r=>[...r]));alert('✅ Planilla importada. Recuerda guardar.');}
+        else{alert('❌ Formato incorrecto.');}
+      }catch(err){alert('❌ Error al leer JSON.');}
+    };
+    reader.readAsText(file);e.target.value='';
+  };
+
+  const renderCellDropdown=(ri,ci,currentVal,options)=>(
+    <select value={currentVal} onChange={e=>setCell(ri,ci,e.target.value)}
+      style={{width:'100%',height:'100%',border:'none',padding:'4px 2px',fontSize:11,textAlign:'center',background:'transparent',fontFamily:'inherit',outline:'none',cursor:'pointer',fontWeight:700}}>
+      <option value=""></option>
+      {options.map(opt=>(<option key={opt} value={opt} style={{fontWeight:700}}>{opt}</option>))}
+    </select>
+  );
+
+  const renderCell=(ri,ci)=>{
+    const val=data[ri]?.[ci]||'';
+    if(!allowEdit)return(<div style={{padding:'8px 6px',textAlign:'center',fontSize:12}}>{val||''}</div>);
+
+    if(isExamen||isDiag){
+      const opts=isExamen?examLetters:diagOptions;
+      return renderCellDropdown(ri,ci,val,opts);
+    }
+    if(isRub)return renderCellDropdown(ri,ci,val,rubricaLabels);
+    if(isCo)return renderCellDropdown(ri,ci,val,coOptions);
+    if(isObs)return renderCellDropdown(ri,ci,val,obsOptions);
+    if(isPort)return renderCellDropdown(ri,ci,val,portOptions);
+    if(isAnec)return renderCellDropdown(ri,ci,val,anecOptions);
+    if(isEscAct)return renderCellDropdown(ri,ci,val,escActOptions);
+    if(isObs)return(<textarea value={val} onChange={e=>setCell(ri,ci,e.target.value)}
+      style={{width:'100%',height:'100%',border:'none',padding:'6px 4px',fontSize:11,textAlign:'center',background:'transparent',fontFamily:'inherit',outline:'none',resize:'none',minHeight:32}}/>);
+    return(<input value={val} onChange={e=>setCell(ri,ci,e.target.value)}
+      style={{width:'100%',height:'100%',border:'none',padding:'8px 6px',fontSize:12,textAlign:'center',background:'transparent',fontFamily:'inherit',outline:'none'}}
+      onFocus={e=>e.currentTarget.style.background='#eef2ff'}
+      onBlur={e=>e.currentTarget.style.background='transparent'}/>);
+  };
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'var(--modal-overlay,rgba(15,23,42,0.7))',zIndex:1100,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'20px 10px',overflowY:'auto'}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:'var(--bg2)',borderRadius:18,width:'100%',maxWidth:1200,boxShadow:'var(--sh3)',border:'1px solid var(--bd)',display:'flex',flexDirection:'column',maxHeight:'90vh'}}>
+        {/* Header */}
+        <div style={{padding:'14px 18px',background:'linear-gradient(135deg,#0f172a,#1e293b)',borderRadius:'18px 18px 0 0',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+          <div>
+            <p style={{margin:0,fontSize:14,fontWeight:800,color:'#fff'}}>📋 {title}</p>
+            {subtitle&&<p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.7)'}}>{subtitle}</p>}
+          </div>
+          <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
+            <button onClick={exportJSON} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📤 JSON</button>
+            <button onClick={exportExcel} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📊 Excel</button>
+            <button onClick={()=>fileInputRef.current?.click()} style={{padding:'6px 12px',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',border:'1px solid rgba(255,255,255,0.3)',background:'rgba(255,255,255,0.1)',color:'#fff'}}>📥 Importar</button>
+            <input type="file" accept=".json" ref={fileInputRef} onChange={importJSON} style={{display:'none'}} />
+            {allowEdit&&<button onClick={handleSave} disabled={guardando} style={{padding:'6px 14px',borderRadius:8,fontSize:11,fontWeight:700,cursor:guardando?'not-allowed':'pointer',border:'none',background:guardando?'#6B7280':saved?'#10B981':'#af2428',color:'#fff'}}>{guardando?'⏳ Guardando...':saved?'✅ Guardado':'💾 Guardar todo'}</button>}
+            <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.2)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
+          </div>
+        </div>
+        {/* Tabla */}
+        <div style={{flex:1,overflow:'auto',padding:16}}>
+          <table style={{borderCollapse:'collapse',fontSize:12,minWidth:'max-content',width:'100%'}}>
+            <thead>
+              <tr>
+                <th style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:3,left:0,minWidth:36,textAlign:'center',borderRight:'1px solid rgba(255,255,255,0.1)'}}>#</th>
+                <th style={{padding:'8px 14px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:3,left:36,minWidth:200,textAlign:'left',borderRight:'2px solid rgba(255,255,255,0.15)'}}>Alumno</th>
+                {headers.map((h,i)=>(
+                  <th key={i} style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:2,minWidth:90,textAlign:'center',borderLeft:'1px solid rgba(255,255,255,0.1)'}}>{h}</th>
+                ))}
+                <th style={{padding:'8px 10px',background:'#0f172a',color:'#fff',fontWeight:800,position:'sticky',top:0,zIndex:2,minWidth:70,textAlign:'center',borderLeft:'2px solid rgba(255,255,255,0.2)'}}>Calif.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row,ri)=>{
+                const bg=ri%2===0?'#ffffff':'#f8fafc';
+                const autoCal=getAutoCal(row);
+                const calColor=getCalBadgeColor(autoCal);
+                return(
+                  <tr key={ri} style={{background:bg}}>
+                    <td style={{padding:'6px 0',textAlign:'center',fontWeight:700,fontSize:11,color:'#64748b',position:'sticky',left:0,background:'inherit',borderRight:'1px solid rgba(0,0,0,0.04)'}}>{ri+1}</td>
+                    <td style={{padding:'8px 14px',fontWeight:700,color:'#1e293b',whiteSpace:'nowrap',position:'sticky',left:36,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)',minWidth:200}}>{rowLabels[ri]||''}</td>
+                    {row.map((cell,ci)=>{
+                      return(
+                        <td key={`${ri}-${ci}`} style={{padding:0,borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:90}}>
+                          {renderCell(ri,ci)}
+                        </td>
+                      );
+                    })}
+                    <td style={{padding:'6px 8px',textAlign:'center',borderLeft:'2px solid rgba(0,0,0,0.06)'}}>
+                      <span style={{display:'inline-block',padding:'3px 10px',borderRadius:20,fontSize:12,fontWeight:900,background:calColor.bg,color:calColor.color,border:`2px solid ${calColor.border}`,transition:'all .2s'}}>{autoCal}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper: extraer datos de planilla para un instrumento específico
+function getPlanillaData({students,grades,subId,pi,unitId,ci,instrKey,slotIdx,gradeDefs,comps,settings}){
+  const sts=students;
+  let headers=[];
+  let rows=[];
+  let rowLabels=sts.map(s=>s.name);
+  const comp=comps?.[ci];
+
+  if(instrKey==='examen'){
+    const gid=sts[0]?.gid||'';
+    const preguntas=getExamClaves(gid);
+    headers=preguntas.map(p=>`P${p.n}`);
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const rawKey=`${slotPfx}|examenraw`;
+      let resp={};
+      try{resp=JSON.parse(grades[rawKey]||'{}');}catch{}
+      return preguntas.map(p=>resp[p.n]||'');
+    });
+  }else if(instrKey==='diag'){
+    const gid=sts[0]?.gid||'';
+    const claves=getDiagClaves(gid,'lee');
+    headers=claves.map(k=>`P${k.n}`);
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const rawKey=`${pfxBase}|diagraw`;
+      let resp={};
+      try{resp=JSON.parse(grades[rawKey]||'{}');}catch{}
+      return claves.map(k=>resp[`P${k.n}`]||'');
+    });
+  }else if(instrKey==='co'){
+    const criterios=comp?.cotCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Item 1','Item 2','Item 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|co|${ri}`]??grades[`${pfxBase}|co|${ri}`];
+        return v===true?'Sí':v===false?'No':v||'';
+      });
+    });
+  }else if(instrKey==='rub'){
+    const criterios=comp?.rubCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Criterio 1','Criterio 2','Criterio 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|rub|${ri}`]??grades[`${pfxBase}|rub|${ri}`];
+        return v||'';
+      });
+    });
+  }else if(instrKey==='obs'){
+    const criterios=comp?.obsCrits||comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Observación'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|obs|${ri}`]??grades[`${slotPfx}|obs`]??grades[`${pfxBase}|obs|${ri}`]??grades[`${pfxBase}|obs`]??'';
+        return v||'';
+      });
+    });
+  }else if(instrKey==='port'){
+    headers=['Evidencia 1','Evidencia 2','Evidencia 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      return headers.map((_,ri)=>{
+        const v=grades[`${slotPfx}|port|${ri}`]??grades[`${pfxBase}|port|${ri}`]??'';
+        return v||'';
+      });
+    });
+  }else if(instrKey==='anec'){
+    headers=['Registro'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const val=grades[`${slotPfx}|anec`]??grades[`${pfxBase}|anec`]??'';
+      return [val];
+    });
+  }else if(instrKey==='escact'){
+    const criterios=comp?.caps||[];
+    headers=criterios.length>0?criterios.map((c,i)=>`C${i+1}`):['Actitud 1','Actitud 2','Actitud 3'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const numItems=headers.length;
+      return Array.from({length:numItems},(_,ri)=>{
+        const v=grades[`${slotPfx}|escact|${ri}`]??grades[`${pfxBase}|escact|${ri}`]??'';
+        return v||'';
+      });
+    });
+  }else{
+    headers=['Valor'];
+    rows=sts.map(s=>{
+      const pfxBase=unitId&&unitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${unitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+      const slotPfx=`${pfxBase}|sl${slotIdx||0}`;
+      const val=grades[`${slotPfx}|${instrKey}`]??grades[`${pfxBase}|${instrKey}`]??'';
+      return [val];
+    });
+  }
+  return {headers,rows,rowLabels};
+}
 
 // ── EXPORTAR A PDF/CSV ────────────────────────────────────
 const exportToPDF=(title,htmlContent)=>{
@@ -2736,7 +3196,13 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
     onSave(ng);
     setEditDesc(false);
   };
-  const saveCrits=()=>{setCriterios(critForm);setEditCrit(false);};
+  const critKey=`rubcrit|${subid}|${ci}`;
+  const saveCrits=()=>{
+    setCriterios(critForm);
+    const ng={...grades,[critKey]:JSON.stringify(critForm)};
+    onSave(ng);
+    setEditCrit(false);
+  };
 
   const score=grades[`${pfx}|rub`];
   const selectedLevels=criterios.map((_,r)=>grades[selKey(r)]||null).filter(Boolean);
@@ -2792,7 +3258,7 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setCritForm(f=>[...f,'Nuevo criterio'])} style={{fontSize:11}}>+ Criterio</Btn>
-              <Btn v="primary" onClick={saveCrits}>💾 Guardar criterios</Btn>
+              <button onClick={saveCrits} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar criterios</button>
             </div>
           </div>
         )}
@@ -2829,7 +3295,7 @@ function RubricModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
               </table>
             </div>
             <div style={{display:'flex',gap:8,marginTop:10}}>
-              <Btn v="primary" onClick={saveDescriptors}>💾 Guardar descriptores</Btn>
+              <button onClick={saveDescriptors} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar descriptores</button>
               <Btn v="ghost" onClick={()=>setEditDesc(false)}>Cancelar</Btn>
             </div>
           </div>
@@ -2903,7 +3369,21 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
   const checked=criterios.filter((_,ri)=>getVal(ri)).length;
   const score=grades[`${pfx}|co`];
   const[editCrit,setEditCrit]=useState(false);const[critForm,setCritForm]=useState([...criterios]);
-  const saveCrits=()=>{setCriterios(critForm);setEditCrit(false);};
+  // Encabezados editables SÍ / NO
+  const coHdrKey=`co_hdr|${subid}|${ci}`;
+  const DEFAULT_CO_HDR=['SÍ','NO','OBSERVACIONES'];
+  const getCoHdr=()=>{try{const d=JSON.parse(grades[coHdrKey]||'null');return d||DEFAULT_CO_HDR;}catch{return DEFAULT_CO_HDR;}};
+  const[coHdr,setCoHdr]=useState(getCoHdr);
+  const[coHdrForm,setCoHdrForm]=useState(getCoHdr);
+  const[editCoHdr,setEditCoHdr]=useState(false);
+  const saveCoHdr=()=>{const ng={...grades,[coHdrKey]:JSON.stringify(coHdrForm)};setCoHdr(coHdrForm);onSave(ng);setEditCoHdr(false);};
+  const coCritKey=`cocrit|${subid}|${ci}`;
+  const saveCrits=()=>{
+    setCriterios(critForm);
+    const ng={...grades,[coCritKey]:JSON.stringify(critForm)};
+    onSave(ng);
+    setEditCrit(false);
+  };
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   const doExportPDF=()=>{
@@ -2935,14 +3415,31 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {score!==undefined&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>{pct2l(checked,criterios.length)} <span style={{fontSize:9,opacity:.75}}>({checked>0?Math.round((checked/criterios.length)*100):0}%)</span></span>}
-            <Btn v="ghost" onClick={()=>setEditCrit(e=>!e)} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editCrit?'✓ Listo':'✏️ Editar'}</Btn>
+            <button onClick={()=>{setEditCrit(e=>!e);setEditCoHdr(false);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editCrit?'✓ Listo':'✏️ Indicadores'}</button>
+            <button onClick={()=>{setEditCoHdr(e=>!e);setCoHdrForm([...coHdr]);setEditCrit(false);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editCoHdr?'✓ Listo':'🏷 Encabezados'}</button>
             <button onClick={()=>{if(!window.confirm('¿Limpiar esta lista de cotejo?'))return;const ng={...grades};criterios.forEach((_,ri)=>{delete ng[`${pfx}|co|${ri}`];delete ng[`${pfx}|co|obs|${ri}`];});delete ng[`${pfx}|co`];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
             <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
 
-        {editCrit?(
+        {editCoHdr?(
+          <div style={{padding:16}}>
+            <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#1B5E20'}}>🏷 Editar encabezados de la lista de cotejo</p>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
+              {coHdrForm.map((lbl,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 10px',borderRadius:8,background:'var(--bg3)',border:'1.5px solid var(--bd)'}}>
+                  <span style={{fontSize:10,color:'var(--t3)',fontWeight:700,minWidth:16}}>{['SÍ','NO','OBS.'][i]||`Col${i+1}`}→</span>
+                  <input value={lbl} onChange={e=>setCoHdrForm(f=>f.map((x,j)=>j===i?e.target.value:x))} style={{fontSize:11,fontWeight:700,width:120,border:'1px solid var(--bd)',borderRadius:6,padding:'3px 6px'}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="ghost" onClick={()=>setCoHdrForm([...DEFAULT_CO_HDR])} style={{fontSize:11}}>↺ Restaurar</Btn>
+              <button onClick={saveCoHdr} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar Encabezados</button>
+            </div>
+          </div>
+        ):editCrit?(
           <div style={{padding:16}}>
             <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#1B5E20'}}>✏️ Editar indicadores observables</p>
             {critForm.map((cr,i)=>(
@@ -2954,7 +3451,7 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setCritForm(f=>[...f,'Nuevo indicador'])} style={{fontSize:11}}>+ Indicador</Btn>
-              <Btn v="primary" onClick={saveCrits}>💾 Guardar</Btn>
+              <button onClick={saveCrits} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
             </div>
           </div>
         ):(
@@ -2962,9 +3459,9 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
             <table style={{width:'100%',borderCollapse:'collapse'}}>
               <thead><tr style={{background:'var(--bg3)'}}>
                 <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left',width:'50%'}}>INDICADOR OBSERVABLE</th>
-                <th style={{padding:'7px',fontSize:10,fontWeight:700,color:'#1B5E20',border:'1px solid var(--bd)',textAlign:'center',width:52}}>SÍ</th>
-                <th style={{padding:'7px',fontSize:10,fontWeight:700,color:'var(--err)',border:'1px solid var(--bd)',textAlign:'center',width:52}}>NO</th>
-                <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left'}}>OBSERVACIONES</th>
+                <th style={{padding:'7px',fontSize:10,fontWeight:700,color:'#1B5E20',border:'1px solid var(--bd)',textAlign:'center',width:52}}>{coHdr[0]||'SÍ'}</th>
+                <th style={{padding:'7px',fontSize:10,fontWeight:700,color:'var(--err)',border:'1px solid var(--bd)',textAlign:'center',width:52}}>{coHdr[1]||'NO'}</th>
+                <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left'}}>{coHdr[2]||'OBSERVACIONES'}</th>
               </tr></thead>
               <tbody>{criterios.map((cr,ri)=>{const val=getVal(ri);return(
                 <tr key={ri} style={{background:ri%2?'var(--bg3)':'var(--bg2)'}}>
@@ -3001,6 +3498,7 @@ function CotejoModal({st,subid,pi,uid,ci,compName,criterios,setCriterios,grades,
 function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
   const pfx=(uid?`obs|${sid}|${subid}|${pi}|${uid}|${ci}`:`obs|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
+  const scoreKey=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'')+`|obs`;
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   // Default indicators based on competence type
@@ -3027,26 +3525,49 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
   };
 
   const indKey=`obs_inds|${subid}|${ci}`;
+  const freqKey=`obs_freq|${subid}|${ci}`;
   const getIndicators=()=>{
     try{const d=JSON.parse(grades[indKey]||'null');return d||getDefaultIndicators();}
     catch{return getDefaultIndicators();}
   };
+  const DEFAULT_FREQ=['SIEMPRE','A VECES','NUNCA'];
+  const DEFAULT_FCOL=['var(--ok)','var(--warn)','var(--err)'];
+  const DEFAULT_FBGCOL=['var(--okbg)','var(--y3)','var(--errbg)'];
+  const getFreqLabels=()=>{try{const d=JSON.parse(grades[freqKey]||'null');return d||DEFAULT_FREQ;}catch{return DEFAULT_FREQ;}};
 
-  const FREQ=['SIEMPRE','A VECES','NUNCA'];
-  const FCOL={SIEMPRE:'var(--ok)','A VECES':'var(--warn)',NUNCA:'var(--err)'};
-  const FBGCOL={SIEMPRE:'var(--okbg)','A VECES':'var(--y3)',NUNCA:'var(--errbg)'};
+  const[freqLabels,setFreqLabels]=useState(getFreqLabels);
+  const[freqForm,setFreqForm]=useState(getFreqLabels);
+  const[editFreq,setEditFreq]=useState(false);
+  const FREQ=freqLabels;
+  const FCOL=Object.fromEntries(freqLabels.map((f,i)=>[f,DEFAULT_FCOL[i]||'var(--ok)']));
+  const FBGCOL=Object.fromEntries(freqLabels.map((f,i)=>[f,DEFAULT_FBGCOL[i]||'var(--okbg)']));
+
+  const saveFreqLabels=()=>{
+    const ng={...grades,[freqKey]:JSON.stringify(freqForm)};
+    setFreqLabels(freqForm);
+    onSave(ng);
+    setEditFreq(false);
+  };
 
   const getFreq=id=>grades[`${pfx}|${id}`]||'';
   const getEv=id=>grades[`${pfx}|${id}|ev`]||'';
   const getObs=()=>grades[`${pfx}|obs`]||'';
 
   const canEditObs=!auth||(['teacher','admin','director','subdirector'].includes(auth?.role));
-  const setFreq=(id,val)=>{if(!canEditObs)return;const ng={...grades};ng[`${pfx}|${id}`]=val;onSave(ng);};
+  const calcObsScore=(inds,freqLbls,gr)=>{
+    const n=inds.length;if(n===0)return null;
+    const maxW=Math.max(freqLbls.length-1,1);
+    let sum=0,filled=0;
+    inds.forEach(ind=>{const f=gr[`${pfx}|${ind.id}`]||'';if(f){const idx=freqLbls.indexOf(f);if(idx>=0){sum+=(maxW-idx);filled++;}}});
+    return filled===0?null:Math.round((sum/(maxW*n))*20);
+  };
+  const setFreq=(id,val)=>{if(!canEditObs)return;const ng={...grades};ng[`${pfx}|${id}`]=val;const s=calcObsScore(indicators,freqLabels,ng);if(s!==null)ng[scoreKey]=s;else delete ng[scoreKey];onSave(ng);};
   const setEv=(id,val)=>{if(!canEditObs)return;const ng={...grades};if(val)ng[`${pfx}|${id}|ev`]=val;else delete ng[`${pfx}|${id}|ev`];onSave(ng);};
   const setObs=(val)=>{if(!canEditObs)return;const ng={...grades};if(val)ng[`${pfx}|obs`]=val;else delete ng[`${pfx}|obs`];onSave(ng);};
 
   const[indicators,setIndicators]=useState(getIndicators);
   const[editInds,setEditInds]=useState(false);
+  const[editVals,setEditVals]=useState(false);
   const[indsForm,setIndsForm]=useState(()=>getIndicators());
 
   const saveInds=()=>{
@@ -3086,14 +3607,35 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.6)'}}>{st.name} | {piName}</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            <Btn v="ghost" onClick={()=>{setEditInds(e=>!e);setIndsForm(indicators);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editInds?'✓ Listo':'✏️ Editar'}</Btn>
-            <button onClick={()=>{if(!window.confirm('¿Limpiar esta ficha de observación?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
+            <button onClick={()=>{setEditInds(e=>!e);setIndsForm(indicators);setEditFreq(false);setEditVals(false);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editInds?'✓ Listo':'✏️ Indicadores'}</button>
+            <button onClick={()=>{setEditFreq(e=>!e);setFreqForm([...freqLabels]);setEditInds(false);setEditVals(false);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editFreq?'✓ Listo':'🏷 Encabezados'}</button>
+            <button onClick={()=>{setEditVals(e=>!e);setEditInds(false);setEditFreq(false);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editVals?'✓ Listo':'✏️ Editar'}</button>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar esta ficha de observación?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);delete ng[scoreKey];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};const s=calcObsScore(indicators,freqLabels,ng);if(s!==null)ng[scoreKey]=s;else delete ng[scoreKey];onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
 
-        {editInds?(
+        {editFreq?(
+          <div style={{padding:16}}>
+            <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#6A1B9A'}}>🏷 Editar encabezados de frecuencia (SIEMPRE, A VECES, NUNCA, etc.)</p>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
+              {freqForm.map((lbl,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 10px',borderRadius:8,background:'var(--bg3)',border:'1.5px solid var(--bd)'}}>
+                  <span style={{fontSize:11,color:'var(--t3)',fontWeight:700,minWidth:16}}>{i+1}.</span>
+                  <input value={lbl} onChange={e=>setFreqForm(f=>f.map((x,j)=>j===i?e.target.value:x))} style={{fontSize:11,fontWeight:700,width:110,border:'1px solid var(--bd)',borderRadius:6,padding:'3px 6px'}}/>
+                  {freqForm.length>2&&<Btn v="danger" onClick={()=>setFreqForm(f=>f.filter((_,j)=>j!==i))} style={{padding:'2px 6px',fontSize:11}}>×</Btn>}
+                </div>
+              ))}
+              {freqForm.length<6&&<Btn v="ghost" onClick={()=>setFreqForm(f=>[...f,'NUEVA'])} style={{fontSize:11,padding:'6px 12px'}}>+ Agregar</Btn>}
+            </div>
+            <p style={{fontSize:10,color:'var(--t3)',marginBottom:10,fontStyle:'italic'}}>⚠️ Cambiar los encabezados no borra los datos ya registrados, pero puede afectar la visualización si los valores guardados no coinciden con los nuevos nombres.</p>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="ghost" onClick={()=>{setFreqForm(DEFAULT_FREQ);}} style={{fontSize:11}}>↺ Restaurar</Btn>
+              <button onClick={saveFreqLabels} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar Encabezados</button>
+            </div>
+          </div>
+        ):editInds?(
           <div style={{padding:16}}>
             <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#6A1B9A'}}>✏️ Editar indicadores de observación</p>
             {indsForm.map((ind,i)=>(
@@ -3105,35 +3647,77 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setIndsForm(f=>[...f,{id:'i'+Date.now(),comp:'',desc:'Nuevo indicador'}])} style={{fontSize:11}}>+ Indicador</Btn>
-              <Btn v="primary" onClick={saveInds}>💾 Guardar</Btn>
+              <button onClick={saveInds} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
             </div>
           </div>
         ):(
           <div style={{padding:12}}>
-            <table style={{width:'100%',borderCollapse:'collapse'}}>
-              <thead><tr style={{background:'var(--bg3)'}}>
-                <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left',width:'42%'}}>INDICADOR DE DESEMPEÑO</th>
-                {FREQ.map(f=><th key={f} style={{padding:'7px',fontSize:10,fontWeight:700,color:FCOL[f],border:'1px solid var(--bd)',textAlign:'center',width:80}}>{f}</th>)}
-                <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left'}}>EVIDENCIA</th>
-              </tr></thead>
-              <tbody>{indicators.map((ind,ri)=>{const freq=getFreq(ind.id);return(
-                <tr key={ind.id} style={{background:ri%2?'var(--bg3)':'var(--bg2)'}}>
-                  <td style={{padding:'8px 10px',fontSize:11,border:'1px solid var(--bd)'}}>{ri+1}. {ind.desc}</td>
-                  {FREQ.map(f=>(
-                    <td key={f} onClick={()=>setFreq(ind.id,freq===f?'':f)} style={{border:'1px solid var(--bd)',textAlign:'center',cursor:'pointer',background:freq===f?FBGCOL[f]:'transparent',transition:'background .15s'}}>
-                      <span style={{fontSize:18,color:freq===f?FCOL[f]:'var(--bd2)'}}>{freq===f?'☑':'☐'}</span>
-                    </td>
-                  ))}
-                  <td style={{border:'1px solid var(--bd)',padding:'4px 6px'}}>
-                    <input value={getEv(ind.id)} onChange={e=>setEv(ind.id,e.target.value)} style={{width:'100%',fontSize:10,border:'none',background:'transparent',outline:'none'}} placeholder="Evidencia..."/>
-                  </td>
-                </tr>);})}
-              </tbody>
-            </table>
-            <div style={{marginTop:10}}>
-              <p style={{fontSize:10,fontWeight:700,color:'var(--t2)',marginBottom:4}}>OBSERVACIONES GENERALES DEL DOCENTE:</p>
-              <textarea value={getObs()} onChange={e=>setObs(e.target.value)} style={{width:'100%',fontSize:11,minHeight:60,border:'1.5px solid var(--bd)',borderRadius:8,padding:'6px 10px',resize:'vertical'}} placeholder="Fortalezas identificadas, dificultades observadas, estudiantes que requieren atención diferenciada..."/>
-            </div>
+            {editVals?(
+              <div>
+                <p style={{fontSize:11,fontWeight:700,color:'#6A1B9A',marginBottom:10}}>✏️ Editar valores de observación</p>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <thead><tr style={{background:'var(--bg3)'}}>
+                    <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left',width:'42%'}}>INDICADOR DE DESEMPEÑO</th>
+                    {FREQ.map(f=><th key={f} style={{padding:'7px',fontSize:10,fontWeight:700,color:FCOL[f],border:'1px solid var(--bd)',textAlign:'center',width:80}}>{f}</th>)}
+                    <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left'}}>EVIDENCIA</th>
+                  </tr></thead>
+                  <tbody>
+                    {indicators.map((ind,ri)=>{
+                      const freq=getFreq(ind.id);
+                      return(
+                        <tr key={ind.id} style={{background:ri%2?'var(--bg3)':'var(--bg2)'}}>
+                          <td style={{padding:'8px 10px',fontSize:11,border:'1px solid var(--bd)'}}>{ri+1}. {ind.desc}</td>
+                          {FREQ.map(f=>(
+                            <td key={f} onClick={()=>setFreq(ind.id,freq===f?'':f)} style={{border:'1px solid var(--bd)',textAlign:'center',cursor:'pointer',background:freq===f?FBGCOL[f]:'rgba(0,0,0,0.04)',transition:'background .15s'}}>
+                              <span style={{fontSize:18,color:freq===f?FCOL[f]:'var(--bd2)',fontWeight:700}}>{freq===f?'☑':'☐'}</span>
+                            </td>
+                          ))}
+                          <td style={{border:'1px solid var(--bd)',padding:'4px 6px'}}>
+                            <input value={getEv(ind.id)} onChange={e=>setEv(ind.id,e.target.value)} placeholder="Agregar evidencia..." style={{width:'100%',fontSize:10,border:'1px solid var(--bd)',borderRadius:4,padding:'4px 6px',background:'rgba(106,27,154,0.08)'}}/>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div style={{marginTop:10}}>
+                  <p style={{fontSize:10,fontWeight:700,color:'var(--t2)',marginBottom:4}}>OBSERVACIONES GENERALES DEL DOCENTE:</p>
+                  <textarea value={getObs()} onChange={e=>setObs(e.target.value)} style={{width:'100%',fontSize:11,minHeight:60,border:'1.5px solid #6A1B9A',borderRadius:8,padding:'6px 10px',resize:'vertical',background:'rgba(106,27,154,0.05)'}} placeholder="Fortalezas identificadas, dificultades observadas, estudiantes que requieren atención diferenciada..."/>
+                </div>
+              </div>
+            ):(
+              <div>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <thead><tr style={{background:'var(--bg3)'}}>
+                    <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left',width:'42%'}}>INDICADOR DE DESEMPEÑO</th>
+                    {FREQ.map(f=><th key={f} style={{padding:'7px',fontSize:10,fontWeight:700,color:FCOL[f],border:'1px solid var(--bd)',textAlign:'center',width:80}}>{f}</th>)}
+                    <th style={{padding:'7px 10px',fontSize:10,fontWeight:700,color:'var(--t2)',border:'1px solid var(--bd)',textAlign:'left'}}>EVIDENCIA</th>
+                  </tr></thead>
+                  <tbody>
+                    {indicators.map((ind,ri)=>{
+                      const freq=getFreq(ind.id);
+                      return(
+                        <tr key={ind.id} style={{background:ri%2?'var(--bg3)':'var(--bg2)'}}>
+                          <td style={{padding:'8px 10px',fontSize:11,border:'1px solid var(--bd)'}}>{ri+1}. {ind.desc}</td>
+                          {FREQ.map(f=>(
+                            <td key={f} onClick={()=>setFreq(ind.id,freq===f?'':f)} style={{border:'1px solid var(--bd)',textAlign:'center',cursor:'pointer',background:freq===f?FBGCOL[f]:'transparent',transition:'background .15s'}}>
+                              <span style={{fontSize:18,color:freq===f?FCOL[f]:'var(--bd2)'}}>{freq===f?'☑':'☐'}</span>
+                            </td>
+                          ))}
+                          <td style={{border:'1px solid var(--bd)',padding:'4px 6px'}}>
+                            <input value={getEv(ind.id)} onChange={e=>setEv(ind.id,e.target.value)} style={{width:'100%',fontSize:10,border:'1px solid rgba(106,27,154,0.25)',borderRadius:4,padding:'3px 6px',background:'rgba(106,27,154,0.04)',outline:'none'}} placeholder="Agregar evidencia..."/>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div style={{marginTop:10}}>
+                  <p style={{fontSize:10,fontWeight:700,color:'var(--t2)',marginBottom:4}}>OBSERVACIONES GENERALES DEL DOCENTE:</p>
+                  <textarea value={getObs()} onChange={e=>setObs(e.target.value)} style={{width:'100%',fontSize:11,minHeight:60,border:'1.5px solid rgba(106,27,154,0.35)',borderRadius:8,padding:'6px 10px',resize:'vertical',background:'rgba(106,27,154,0.04)',outline:'none'}} placeholder="Fortalezas identificadas, dificultades observadas, estudiantes que requieren atención diferenciada..."/>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -3145,6 +3729,7 @@ function ObsModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,au
 function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
   const pfx=(uid?`port|${sid}|${subid}|${pi}|${uid}|${ci}`:`port|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
+  const scoreKey=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'')+`|port`;
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   const evidenciasKey=`port_evs|${subid}|${ci}`;
@@ -3157,7 +3742,7 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
   const getPresent=id=>grades[`${pfx}|${id}|pres`]==='1';
   const getReflexion=id=>grades[`${pfx}|${id}|ref`]||'';
 
-  const setPresent=(id,val)=>{const ng={...grades};if(val)ng[`${pfx}|${id}|pres`]='1';else delete ng[`${pfx}|${id}|pres`];onSave(ng);};
+  const setPresent=(id,val)=>{const ng={...grades};if(val)ng[`${pfx}|${id}|pres`]='1';else delete ng[`${pfx}|${id}|pres`];const newPres=evidencias.filter(e=>e.id===id?val:ng[`${pfx}|${e.id}|pres`]==='1').length;const sc=evidencias.length>0?Math.round((newPres/evidencias.length)*20):0;if(sc>0)ng[scoreKey]=sc;else delete ng[scoreKey];onSave(ng);};
   const setReflexion=(id,val)=>{const ng={...grades};if(val)ng[`${pfx}|${id}|ref`]=val;else delete ng[`${pfx}|${id}|ref`];onSave(ng);};
 
   const[evidencias,setEvidencias]=useState(getEvs);
@@ -3194,9 +3779,9 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>{pct2l(presentados,total)} <span style={{fontSize:9,opacity:.75}}>({presentados}/{total})</span></span>}
-            <Btn v="ghost" onClick={()=>{setEditEvs(e=>!e);setEvsForm(evidencias);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>{editEvs?'✓ Listo':'✏️ Editar'}</Btn>
-            <button onClick={()=>{if(!window.confirm('¿Limpiar el portafolio de este alumno?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
+            <button onClick={()=>{setEditEvs(e=>!e);setEvsForm(evidencias);}} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>{editEvs?'✓ Listo':'✏️ Editar'}</button>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar el portafolio de este alumno?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);delete ng[scoreKey];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};const sc=total>0?Math.round((presentados/total)*20):0;if(sc>0)ng[scoreKey]=sc;else delete ng[scoreKey];onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3212,7 +3797,7 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setEvsForm(f=>[...f,{id:'e'+Date.now(),nombre:'Nueva evidencia',tipo:'Produccion'}])} style={{fontSize:11}}>+ Evidencia</Btn>
-              <Btn v="primary" onClick={saveEvs}>💾 Guardar</Btn>
+              <button onClick={saveEvs} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
             </div>
           </div>
         ):(
@@ -3252,6 +3837,8 @@ function PortafolioModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
 function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings,auth,slotIdx}){
   const sid=st.id;
   const pfx=(uid?`anec|${sid}|${subid}|${pi}|${uid}|${ci}`:`anec|${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'');
+  const scoreKey=(uid?`${sid}|${subid}|${pi}|${uid}|${ci}`:`${sid}|${subid}|${pi}|${ci}`)+(slotIdx!=null?`|sl${slotIdx}`:'')+`|anec`;
+  const anecScoreFromList=(list)=>list.length>=5?20:list.length>=3?17:list.length>=1?14:null;
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   const getAnecdotas=()=>{try{const d=JSON.parse(grades[`${pfx}|list`]||'null');return d||[]}catch{return[];}};
@@ -3263,8 +3850,8 @@ function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
   const getAccion=(i)=>grades[`${pfx}|${i}|accion`]||'';
 
   const setAnecdota=(idx,field,val)=>{const ng={...grades};const list=[...getAnecdotas()];while(list.length<=idx)list.push({});list[idx]={...list[idx],[field]:val};ng[`${pfx}|list`]=JSON.stringify(list);onSave(ng);};
-  const addAnecdota=()=>{const ng={...grades};const list=[...getAnecdotas(),{fecha:todayStr(),contexto:'',conducta:'',interpre:'',accion:''}];ng[`${pfx}|list`]=JSON.stringify(list);onSave(ng);};
-  const delAnecdota=(idx)=>{const ng={...grades};const list=getAnecdotas().filter((_,i)=>i!==idx);ng[`${pfx}|list`]=JSON.stringify(list);onSave(ng);};
+  const addAnecdota=()=>{const ng={...grades};const list=[...getAnecdotas(),{fecha:todayStr(),contexto:'',conducta:'',interpre:'',accion:''}];ng[`${pfx}|list`]=JSON.stringify(list);const s=anecScoreFromList(list);if(s!==null)ng[scoreKey]=s;else delete ng[scoreKey];onSave(ng);};
+  const delAnecdota=(idx)=>{const ng={...grades};const list=getAnecdotas().filter((_,i)=>i!==idx);ng[`${pfx}|list`]=JSON.stringify(list);const s=anecScoreFromList(list);if(s!==null)ng[scoreKey]=s;else delete ng[scoreKey];onSave(ng);};
   const setObs=(val)=>{const ng={...grades};if(val)ng[`${pfx}|obs`]=val;else delete ng[`${pfx}|obs`];onSave(ng);};
 
   const anecdotes=getAnecdotas();
@@ -3293,9 +3880,9 @@ function AnecdoticoModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,sett
             <p style={{margin:0,fontSize:11,color:'rgba(255,255,255,0.6)'}}>{st.name} | {piName} · {anecdotes.length} registro(s)</p>
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
-            <Btn v="ghost" onClick={addAnecdota} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.35)',fontSize:10,padding:'4px 10px'}}>✏️ Editar / + Registro</Btn>
-            <button onClick={()=>{if(!window.confirm('¿Limpiar todos los registros anecdóticos?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
-            <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
+            <button onClick={addAnecdota} style={{border:'1px solid rgba(255,255,255,0.35)',background:'transparent',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:10,padding:'0 10px',fontWeight:700}}>✏️ Editar / + Registro</button>
+            <button onClick={()=>{if(!window.confirm('¿Limpiar todos los registros anecdóticos?'))return;const ng={...grades};Object.keys(ng).filter(k=>k.startsWith(pfx)).forEach(k=>delete ng[k]);delete ng[scoreKey];onSave(ng);}} style={{border:'none',background:'rgba(239,68,68,0.75)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 10px',fontWeight:700}}>🗑 Limpiar</button>
+            <button onClick={()=>{const ng={...grades};const s=anecScoreFromList(anecdotes);if(s!==null)ng[scoreKey]=s;else delete ng[scoreKey];onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
@@ -3341,7 +3928,14 @@ function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
   // Niveles de la escala con colores
-  const NIVELES=['Siempre (4)','Casi siempre (3)','A veces (2)','Raramente (1)','Nunca (0)'];
+  const DEFAULT_NIVELES=['Siempre (4)','Casi siempre (3)','A veces (2)','Raramente (1)','Nunca (0)'];
+  const nivKey=`escact_niv|${subid}|${ci}`;
+  const getNiveles=()=>{try{const d=JSON.parse(grades[nivKey]||'null');return d||DEFAULT_NIVELES;}catch{return DEFAULT_NIVELES;}};
+  const[nivelesLabels,setNivelesLabels]=useState(getNiveles);
+  const[nivForm,setNivForm]=useState(getNiveles);
+  const[editNiv,setEditNiv]=useState(false);
+  const saveNiveles=()=>{const ng={...grades,[nivKey]:JSON.stringify(nivForm)};setNivelesLabels(nivForm);onSave(ng);setEditNiv(false);};
+  const NIVELES=nivelesLabels;
   const NCOL={0:'var(--err)',1:'var(--err)',2:'var(--warn)',3:'var(--inf)',4:'var(--ok)'};
   const NBGCOL={0:'var(--errbg)',1:'var(--errbg)',2:'var(--warnbg)',3:'var(--infbg)',4:'var(--okbg)'};
   const NBGHEAD={0:'#FEE2E2',1:'#FEE2E2',2:'#FEF3C7',3:'#DBEAFE',4:'#D1FAE5'};
@@ -3428,6 +4022,7 @@ function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose
         <div style={{display:'flex',borderBottom:'1px solid var(--bd)',background:'var(--bg3)'}}>
           <button onClick={()=>setActiveTab('evaluar')} style={{padding:'10px 20px',border:'none',background:activeTab==='evaluar'?'var(--bg2)':'transparent',color:activeTab==='evaluar'?'var(--r)':'var(--t2)',fontWeight:activeTab==='evaluar'?700:400,fontSize:11,cursor:'pointer',fontFamily:'inherit',borderBottom:activeTab==='evaluar'?'2px solid var(--r)':'2px solid transparent'}}>📝 Evaluar</button>
           <button onClick={()=>{setActiveTab('editar');setEditInds(true);}} style={{padding:'10px 20px',border:'none',background:activeTab==='editar'?'var(--bg2)':'transparent',color:activeTab==='editar'?'var(--r)':'var(--t2)',fontWeight:activeTab==='editar'?700:400,fontSize:11,cursor:'pointer',fontFamily:'inherit',borderBottom:activeTab==='editar'?'2px solid var(--r)':'2px solid transparent'}}>✏️ Editar Indicadores</button>
+          <button onClick={()=>{setActiveTab('encabezados');setNivForm([...nivelesLabels]);}} style={{padding:'10px 20px',border:'none',background:activeTab==='encabezados'?'var(--bg2)':'transparent',color:activeTab==='encabezados'?'var(--r)':'var(--t2)',fontWeight:activeTab==='encabezados'?700:400,fontSize:11,cursor:'pointer',fontFamily:'inherit',borderBottom:activeTab==='encabezados'?'2px solid var(--r)':'2px solid transparent'}}>🏷 Encabezados</button>
         </div>
 
         {/* TAB: EVALUAR */}
@@ -3514,7 +4109,27 @@ function EscalaActitudesModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setIndsForm(f=>[...f,{id:'a'+Date.now(),nombre:'Nuevo indicador',categoria:'Lee diversos tipos de textos escritos',descripcion:''}])} style={{fontSize:11}}>+ Indicador</Btn>
-              <Btn v="primary" onClick={saveInds}>💾 Guardar Indicadores</Btn>
+              <button onClick={saveInds} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar Indicadores</button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ENCABEZADOS */}
+        {activeTab==='encabezados'&&(
+          <div style={{padding:16}}>
+            <p style={{fontSize:12,fontWeight:700,marginBottom:6,color:'#DB2777'}}>🏷 Editar encabezados de la escala (Siempre, Casi siempre, A veces, Raramente, Nunca)</p>
+            <p style={{fontSize:10,color:'var(--t3)',marginBottom:12,fontStyle:'italic'}}>Cada encabezado corresponde a un nivel de puntaje. El primero vale 4 puntos, el último vale 0. No cambies el número de niveles si ya tienes datos registrados.</p>
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:14}}>
+              {nivForm.map((lbl,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:NBGHEAD[NIVELES.length-1-i]||'var(--bg3)',border:`1.5px solid ${Object.values(NCOL)[i]||'var(--bd)'}`}}>
+                  <span style={{fontSize:11,fontWeight:800,color:Object.values(NCOL)[i]||'var(--t2)',minWidth:20}}>{NIVELES.length-i}</span>
+                  <input value={lbl} onChange={e=>setNivForm(f=>f.map((x,j)=>j===i?e.target.value:x))} style={{flex:1,fontSize:11,fontWeight:700,border:'1px solid var(--bd)',borderRadius:6,padding:'4px 8px',background:'rgba(255,255,255,0.8)'}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="ghost" onClick={()=>setNivForm([...DEFAULT_NIVELES])} style={{fontSize:11}}>↺ Restaurar</Btn>
+              <button onClick={saveNiveles} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar Encabezados</button>
             </div>
           </div>
         )}
@@ -3530,7 +4145,14 @@ function AutoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settin
   const pfx=uid?`auto|${sid}|${subid}|${pi}|${uid}|${ci}`:`auto|${sid}|${subid}|${pi}|${ci}`;
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
-  const NIVELES=['Lo logre muy bien','Lo logre con dificultad','Aún no lo logre'];
+  const DEFAULT_NIVELES_AUTO=['Lo logre muy bien','Lo logre con dificultad','Aún no lo logre'];
+  const autoNivKey=`auto_niv|${subid}|${ci}`;
+  const getAutoNiveles=()=>{try{const d=JSON.parse(grades[autoNivKey]||'null');return d||DEFAULT_NIVELES_AUTO;}catch{return DEFAULT_NIVELES_AUTO;}};
+  const[autoNivLabels,setAutoNivLabels]=useState(getAutoNiveles);
+  const[autoNivForm,setAutoNivForm]=useState(getAutoNiveles);
+  const[editAutoNiv,setEditAutoNiv]=useState(false);
+  const saveAutoNiveles=()=>{const ng={...grades,[autoNivKey]:JSON.stringify(autoNivForm)};setAutoNivLabels(autoNivForm);onSave(ng);setEditAutoNiv(false);};
+  const NIVELES=autoNivLabels;
   const NCOL={0:'var(--ok)',1:'var(--warn)',2:'var(--err)'};
   const NBGCOL={0:'var(--okbg)',1:'var(--warnbg)',2:'var(--errbg)'};
 
@@ -3582,14 +4204,31 @@ function AutoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settin
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>Nota: {score}</span>}
-            <Btn v="ghost" onClick={()=>{setEditItems(e=>!e);setItemsForm(items);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editItems?'✓ Listo':'✏️ Editar'}</Btn>
+            <Btn v="ghost" onClick={()=>{setEditItems(e=>!e);setItemsForm(items);setEditAutoNiv(false);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editItems?'✓ Listo':'✏️ Ítems'}</Btn>
+            <Btn v="ghost" onClick={()=>{setEditAutoNiv(e=>!e);setAutoNivForm([...autoNivLabels]);setEditItems(false);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editAutoNiv?'✓ Listo':'🏷 Encabezados'}</Btn>
             <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
             <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
             <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
-        {editItems?(
+        {editAutoNiv?(
+          <div style={{padding:16}}>
+            <p style={{fontSize:12,fontWeight:700,marginBottom:8,color:'#0D9488'}}>🏷 Editar encabezados de la autoevaluación</p>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:12}}>
+              {autoNivForm.map((lbl,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 10px',borderRadius:8,background:'var(--bg3)',border:'1.5px solid var(--bd)'}}>
+                  <span style={{fontSize:11,color:'var(--t3)',fontWeight:700,minWidth:16}}>{i+1}.</span>
+                  <input value={lbl} onChange={e=>setAutoNivForm(f=>f.map((x,j)=>j===i?e.target.value:x))} style={{fontSize:11,fontWeight:700,width:150,border:'1px solid var(--bd)',borderRadius:6,padding:'3px 6px'}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="ghost" onClick={()=>setAutoNivForm([...DEFAULT_NIVELES_AUTO])} style={{fontSize:11}}>↺ Restaurar</Btn>
+              <button onClick={saveAutoNiveles} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
+            </div>
+          </div>
+        ):editItems?(
           <div style={{padding:16}}>
             <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#10B981'}}>✏️ Editar indicadores de autoevaluacion</p>
             {itemsForm.map((item,i)=>(
@@ -3601,7 +4240,7 @@ function AutoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settin
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setItemsForm(f=>[...f,{id:'a'+Date.now(),nombre:'Nuevo indicador'}])} style={{fontSize:11}}>+ Indicador</Btn>
-              <Btn v="primary" onClick={saveItems}>💾 Guardar</Btn>
+              <button onClick={saveItems} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
             </div>
           </div>
         ):(
@@ -3645,7 +4284,14 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   const pfx=uid?`coev|${sid}|${subid}|${pi}|${uid}|${ci}`:`coev|${sid}|${subid}|${pi}|${ci}`;
   const piName=(settings?.periods||['1er Bim','2do Bim','3er Bim','4to Bim'])[pi]||`Bim. ${pi+1}`;
 
-  const NIVELES=['Excelente','Bueno','Regular','Necesita mejorar'];
+  const DEFAULT_NIVELES_COEV=['Excelente','Bueno','Regular','Necesita mejorar'];
+  const coevNivKey=`coev_niv|${subid}|${ci}`;
+  const getCoevNiveles=()=>{try{const d=JSON.parse(grades[coevNivKey]||'null');return d||DEFAULT_NIVELES_COEV;}catch{return DEFAULT_NIVELES_COEV;}};
+  const[coevNivLabels,setCoevNivLabels]=useState(getCoevNiveles);
+  const[coevNivForm,setCoevNivForm]=useState(getCoevNiveles);
+  const[editCoevNiv,setEditCoevNiv]=useState(false);
+  const saveCoevNiveles=()=>{const ng={...grades,[coevNivKey]:JSON.stringify(coevNivForm)};setCoevNivLabels(coevNivForm);onSave(ng);setEditCoevNiv(false);};
+  const NIVELES=coevNivLabels;
   const NCOL={0:'var(--ok)',1:'var(--inf)',2:'var(--warn)',3:'var(--err)'};
   const NBGCOL={0:'var(--okbg)',1:'var(--infbg)',2:'var(--warnbg)',3:'var(--errbg)'};
 
@@ -3699,14 +4345,33 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
             {score>0&&<span style={{padding:'4px 12px',borderRadius:20,background:'rgba(255,255,255,0.2)',color:'#fff',fontWeight:700,fontSize:12}}>Nota: {score}</span>}
-            <Btn v="ghost" onClick={()=>{setEditItems(e=>!e);setItemsForm(items);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editItems?'✓ Listo':'✏️ Editar'}</Btn>
+            <Btn v="ghost" onClick={()=>{setEditItems(e=>!e);setItemsForm(items);setEditCoevNiv(false);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editItems?'✓ Listo':'✏️ Criterios'}</Btn>
+            <Btn v="ghost" onClick={()=>{setEditCoevNiv(e=>!e);setCoevNivForm([...coevNivLabels]);setEditItems(false);}} style={{color:'#fff',border:'1px solid rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px'}}>{editCoevNiv?'✓ Listo':'🏷 Encabezados'}</Btn>
             <Btn v="ghost" onClick={doExportPDF} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📄 PDF</Btn>
             <Btn v="ghost" onClick={doExportCSV} style={{color:'var(--t)',border:'1px solid var(--bd)',fontSize:10,padding:'4px 8px'}}>📊 Excel</Btn>
             <button onClick={()=>{const ng={...grades};onSave(ng);onClose();}} style={{border:'none',background:'rgba(76,175,80,0.8)',color:'#fff',borderRadius:8,height:28,cursor:'pointer',fontSize:11,padding:'0 12px',fontWeight:700}}>💾 Guardar y Cerrar</button>
             <button onClick={onClose} style={{border:'none',background:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
           </div>
         </div>
-        {editItems?(
+        {editCoevNiv?(
+          <div style={{padding:16}}>
+            <p style={{fontSize:12,fontWeight:700,marginBottom:8,color:'#0891B2'}}>🏷 Editar encabezados de la coevaluación (Excelente, Bueno, Regular, etc.)</p>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:12}}>
+              {coevNivForm.map((lbl,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 10px',borderRadius:8,background:'var(--bg3)',border:'1.5px solid var(--bd)'}}>
+                  <span style={{fontSize:11,color:'var(--t3)',fontWeight:700,minWidth:16}}>{i+1}.</span>
+                  <input value={lbl} onChange={e=>setCoevNivForm(f=>f.map((x,j)=>j===i?e.target.value:x))} style={{fontSize:11,fontWeight:700,width:130,border:'1px solid var(--bd)',borderRadius:6,padding:'3px 6px'}}/>
+                  {coevNivForm.length>2&&<Btn v="danger" onClick={()=>setCoevNivForm(f=>f.filter((_,j)=>j!==i))} style={{padding:'2px 6px',fontSize:11}}>×</Btn>}
+                </div>
+              ))}
+              {coevNivForm.length<6&&<Btn v="ghost" onClick={()=>setCoevNivForm(f=>[...f,'Nuevo nivel'])} style={{fontSize:11,padding:'6px 12px'}}>+ Agregar</Btn>}
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <Btn v="ghost" onClick={()=>setCoevNivForm([...DEFAULT_NIVELES_COEV])} style={{fontSize:11}}>↺ Restaurar</Btn>
+              <button onClick={saveCoevNiveles} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
+            </div>
+          </div>
+        ):editItems?(
           <div style={{padding:16}}>
             <p style={{fontSize:12,fontWeight:700,marginBottom:10,color:'#06B6D4'}}>✏️ Editar criterios de coevaluacion</p>
             {itemsForm.map((item,i)=>(
@@ -3718,7 +4383,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
             ))}
             <div style={{display:'flex',gap:8,marginTop:8}}>
               <Btn v="ghost" onClick={()=>setItemsForm(f=>[...f,{id:'c'+Date.now(),nombre:'Nuevo criterio'}])} style={{fontSize:11}}>+ Criterio</Btn>
-              <Btn v="primary" onClick={saveItems}>💾 Guardar</Btn>
+              <button onClick={saveItems} style={{border:"none",background:"rgba(76,175,80,0.9)",color:"#fff",borderRadius:8,height:32,cursor:"pointer",fontSize:11,padding:"0 14px",fontWeight:700}}>💾 Guardar</button>
             </div>
           </div>
         ):(
@@ -3777,11 +4442,13 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   function Grades({students,subjects,grades,onSave,gradeDefs,settings,onUpdateSubjects,auth,diagClavesVer=0}){
   // Filtrar por scope del docente
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const visSubjects=scope.isTeacher?scope.mySubjects:subjects;
-  const visStudentIds=scope.isTeacher?new Set(scope.myStudentIds):null;
-  const visGids=scope.isTeacher?scope.myGids:null;
-  const visSids=scope.isTeacher?scope.mySids:null;
-  const[subId,setSubId]=useState(()=>(scope.isTeacher?scope.mySubjects:subjects)[0]?.id||'');
+  // Si es docente pero no tiene cursos asignados aún → mostrar todos (no bloquear)
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const visSubjects=scopeHasSubs?scope.mySubjects:subjects;
+  const visStudentIds=scopeHasSubs?new Set(scope.myStudentIds):null;
+  const visGids=scopeHasSubs?scope.myGids:null;
+  const visSids=scopeHasSubs?scope.mySids:null;
+  const[subId,setSubId]=useState(()=>visSubjects[0]?.id||'');
   const[pi,setPi]=useState(()=>{
     const today=todayStr();
     const pc=settings.periodsConf;
@@ -3792,18 +4459,23 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
     const m=new Date().getMonth()+1;
     if(m<=3)return'0';if(m<=6)return'1';if(m<=9)return'2';return'3';
   });
-  const[fGrade,setFGrade]=useState(()=>scope.isTeacher&&scope.myGids.length===1?scope.myGids[0]:'');
-  const[fSec,setFSec]=useState(()=>scope.isTeacher&&scope.mySids.length===1?scope.mySids[0]:'');
+  const[fGrade,setFGrade]=useState(()=>{
+    const pre=localStorage.getItem('v5_preselected_grade');
+    if(pre){localStorage.removeItem('v5_preselected_grade');return pre;}
+    return scopeHasSubs&&scope.myGids.length===1?scope.myGids[0]:'';
+  });
+  const[fSec,setFSec]=useState(()=>scopeHasSubs&&scope.mySids.length===1?scope.mySids[0]:'');
   const[searchQ,setSearchQ]=useState('');
   const[modal,setModal]=useState(null);
+  const[planillaModal,setPlanillaModal]=useState(null);// {instrKey,ci,slotIdx,title,subtitle}
   const[compSaved,setCompSaved]=useState(false);// feedback guardado competencias
   const sc=settings.scaleType||'literal';
   const LITERAL=['AD','A','B','C'];
   const subject=visSubjects.find(s=>s.id===subId);
   const comps=subject?.comps||[];
   // Para docente: filtrar grados y secciones disponibles
-  const hasAssignments=scope.isTeacher&&scope.myGids.length>0;
-  const availGrades=hasAssignments?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
+  const hasAssignments=scopeHasSubs&&scope.myGids.length>0;
+  const availGrades=scopeHasSubs?(scope.myGids.length>0?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs.filter(g=>scope.mySubjects.some(s=>(s.gids||[]).includes(g.id)))):gradeDefs;
   const selGrade=availGrades.find(g=>g.id===fGrade)||(availGrades.length>0?null:null);
   const selGradeObj=gradeDefs.find(g=>g.id===fGrade);
 
@@ -3967,7 +4639,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
     if(hasAssignments&&!scope.myStudentIds.includes(s.id))return false;
     if(fGrade&&s.gid!==fGrade)return false;
     if(fSec&&s.sid!==fSec)return false;
-    if(scope.isTeacher&&fGrade&&scope.mySids.length>0&&!fSec&&!scope.mySids.includes(s.sid))return false;
+    if(scopeHasSubs&&fGrade&&scope.mySids.length>0&&!fSec&&!scope.mySids.includes(s.sid))return false;
     if(searchQ){
       const q=searchQ.toLowerCase();
       if(!s.name.toLowerCase().includes(q)&&!(s.dni||'').includes(q))return false;
@@ -3983,9 +4655,9 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
       <PHdr title="Registro de notas" icon="📝"/>
       <Card>
         <p style={{color:'var(--t2)',textAlign:'center',marginBottom:hasAnyGrades?10:0}}>
-          {scope.isTeacher?'No tienes cursos asignados. Pide al administrador que te asigne cursos y secciones.':'Crea cursos primero.'}
+          {'Crea cursos primero o asigna cursos al docente desde el módulo Usuarios.'}
         </p>
-        {scope.isTeacher&&hasAnyGrades&&(
+        {hasAnyGrades&&(
           <div style={{marginTop:10,padding:'10px 14px',background:LBGC.warn,border:`1px solid ${LCOL.warn}44`,borderRadius:10}}>
             <p style={{fontSize:11,fontWeight:700,color:LCOL.warn,margin:'0 0 4px'}}>⚠️ Tienes notas guardadas pero sin asignación de curso</p>
             <p style={{fontSize:10,color:'var(--t2)',margin:'0 0 8px'}}>El administrador debe asignarte a tus cursos y secciones. Tus notas están guardadas y no se han perdido.</p>
@@ -3997,7 +4669,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
   }
 
   const[gradesSaved,setGradesSaved]=useState(false);
-  const[viewMode,setViewMode]=useState('excel');// 'registro' | 'resumen' | 'excel'
+  const[viewMode,setViewMode]=useState('registro');// 'registro' | 'resumen' | 'excel'
   const[instrSelectorOpen,setInstrSelectorOpen]=useState(null);// {ci,slot}|null
   // Competencia seleccionada para vista de cards
   const[selComp,setSelComp]=useState(0);
@@ -4017,6 +4689,32 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
     setGradesSaved(true);
     setTimeout(()=>setGradesSaved(false),1800);
   };
+  // ══════════════════════════════════════════════════════════════
+  // 📊 ESTADÍSTICAS DE NOTAS POR INSTRUMENTO
+  // ══════════════════════════════════════════════════════════════
+  const getInstrumentStats=(stsFiltered,grades,subId,pi,ci,instrKey,activeUnitId,sc)=>{
+    const columnValues=stsFiltered.map(st=>{
+      let noteKey;
+      if(activeUnitId&&activeUnitId!=='__legacy__'){
+        noteKey=`${st.id}|${subId}|${pi}|${activeUnitId}|${ci}|${instrKey}`;
+      }else{
+        noteKey=`${st.id}|${subId}|${pi}|${ci}|${instrKey}`;
+      }
+      const valor=grades[noteKey];
+      return valor!==undefined&&valor!==null&&valor!==''?valor:null;
+    });
+    const valoresValidos=columnValues.filter(v=>v!==null);
+    const totalAlumnos=stsFiltered.length;
+    const cumplidos=valoresValidos.length;
+    const incumplidos=totalAlumnos-cumplidos;
+    let aprobados=0,enRiesgo=0,criticos=0;
+    valoresValidos.forEach(valor=>{
+      const numVal=typeof valor==='number'?valor:parseFloat(valor)||0;
+      if(numVal>=14){aprobados++;}else if(numVal>=8){enRiesgo++;}else{criticos++;}
+    });
+    return{cumplidos,incumplidos,aprobados,enRiesgo,criticos,totalAlumnos,porcentajeLlenado:totalAlumnos>0?Math.round((cumplidos/totalAlumnos)*100):0};
+  };
+
   // Modal keys también deben usar la unidad activa
   const modalPi=parseInt(pi);
   const modalUid=modal?.uid;
@@ -4025,16 +4723,16 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
 
   return(
     <div className="fade">
-      {modal?.type==='rub'&&modalSt&&<RubricModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'rubCrits')||comps[modal.ci]?.rubCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),rubCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'rubCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='co'&&modalSt&&<CotejoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'cotCrits')||comps[modal.ci]?.cotCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),cotCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'cotCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='diag'&&modalSt&&<DiagModal key={`diag-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}-${diagClavesVer}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='examen'&&modalSt&&<ExamenModal key={`examen-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} sc={sc} settings={settings} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='obs'&&modalSt&&<ObsModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='port'&&modalSt&&<PortafolioModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='anec'&&modalSt&&<AnecdoticoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='escact'&&modalSt&&<EscalaActitudesModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
-      {modal?.type==='auto'&&modalSt&&<AutoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
-      {modal?.type==='coev'&&modalSt&&<CoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} students={students}/>}
+      {modal?.type==='rub'&&<RubricModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'rubCrits')||comps[modal.ci]?.rubCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),rubCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'rubCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='co'&&<CotejoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} criterios={getTeacherCrits(modal.ci,'cotCrits')||comps[modal.ci]?.cotCrits||comps[modal.ci]?.caps||[]} setCriterios={v=>{if(auth?.role==='teacher'){const sub=subjects.find(s=>s.id===subId);const tas=sub?.teacherAssignments||[];const ta=tas.find(t=>t.userId===auth.id)||{userId:auth.id,gids:[],sids:[],instrs:{},crits:{}};const newCrits={...(ta.crits||{}),[modal.ci]:{...(ta.crits?.[modal.ci]||{}),cotCrits:v}};const newTAs=(tas.find(t=>t.userId===auth.id))?tas.map(t=>t.userId===auth.id?{...t,crits:newCrits}:t):[...tas,{userId:auth.id,gids:ta.gids||[],sids:ta.sids||[],instrs:ta.instrs||{},crits:newCrits}];saveComps(subjects.map(s=>s.id===subId?{...s,teacherAssignments:newTAs}:s));}else{updateSubjComp(modal.ci,'cotCrits',v);}}} grades={grades} onSave={onSave} onClose={()=>setModal(null)} sc={sc} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='diag'&&<DiagModal key={`diag-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}-${diagClavesVer}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='examen'&&<ExamenModal key={`examen-${modal.sid}-${modal.ci}-${modal.slotIdx??'noslot'}`} st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} gradeDefs={gradeDefs} auth={auth} sc={sc} settings={settings} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='obs'&&<ObsModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='port'&&<PortafolioModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='anec'&&<AnecdoticoModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='escact'&&<EscalaActitudesModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} slotIdx={modal.slotIdx}/>}
+      {modal?.type==='auto'&&<AutoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth}/>}
+      {modal?.type==='coev'&&<CoevalModal st={modalSt} subid={subId} pi={modalPi} uid={modalUid} ci={modal.ci} compName={comps[modal.ci]?.name||''} grades={grades} onSave={onSave} onClose={()=>setModal(null)} settings={settings} auth={auth} students={students}/>}
 
       
       {/* ── TAB CONTENT: REGISTRO ── */}
@@ -4328,7 +5026,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
               <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',borderRadius:20,background:'rgba(236,72,153,0.15)',border:'1px solid rgba(236,72,153,0.3)'}}>
                 <span style={{color:'#DB2777',fontWeight:700,fontSize:10}}>🎓</span>
                 <select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#1e293b',fontSize:10,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                  <option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>
+                  <option value="" style={{color:'#000'}}>{scopeHasSubs?'Mis grados':'Todos'}</option>
                   {availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}
                 </select>
               </div>
@@ -4336,7 +5034,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                 <span style={{color:'#D97706',fontWeight:700,fontSize:10}}>👥</span>
                 <select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:fSec?'#1e293b':'rgba(0,0,0,0.4)',fontSize:10,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed',minWidth:50}}>
                   <option value="" style={{color:'#000'}}>Sec</option>
-                  {(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
+                  {(selGradeObj?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
                 </select>
               </div>
               <div style={{marginLeft:'auto',display:'flex',gap:6,alignItems:'center'}}>
@@ -4390,6 +5088,64 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                   exportToXLS(filename,rows);
                 }} style={{padding:'6px 14px',background:'var(--ok)',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
                   📊 Excel
+                </button>
+                <button onClick={()=>{
+                  const sub=visSubjects.find(s=>s.id===subId);
+                  const piNum=parseInt(pi)||0;
+                  const grado=availGrades.find(g=>g.id===fGrade);
+                  const sec=selGradeObj?.secs?.find(s=>s.id===fSec);
+                  const filename=`Respuestas_Detalladas_${sub?.name||'Curso'}_${grado?.name||'Grado'}_${sec?.name||'Sec'}_${PERIODS_LIST[piNum]}`;
+                  const rows=[['N°','Alumno']];
+                  comps.forEach((c,ci)=>{
+                    if(ci===0){
+                      for(let i=1;i<=10;i++){rows[0].push(`C1-P${i}`);}
+                    }else if(ci===1){
+                      rows[0].push('C2-P1');rows[0].push('C2-P2');
+                    }else if(ci===2){
+                      rows[0].push('C3-Nota Directa');
+                      rows[0].push('C3-Cotejo');
+                      rows[0].push('C3-Observación');
+                      rows[0].push('C3-Escala Actitudes');
+                    }
+                  });
+                  stsFiltered.forEach((s,i)=>{
+                    const row=[i+1,s.name];
+                    comps.forEach((c,ci)=>{
+                      if(ci===0){
+                        const pq=getExamClaves(s.gid||'');
+                        const examRawKey=`${s.id}|${subId}|${pi}||${ci}|examenraw`;
+                        const resp=JSON.parse(grades[examRawKey]||'{}');
+                        for(let j=1;j<=10;j++){
+                          const clave=pq[j-1]?.clave;
+                          const val=resp[j]||'';
+                          const correct=val===clave?'✓':'✗';
+                          row.push(val?`${val} ${correct}`:'—');
+                        }
+                      }else if(ci===1){
+                        const diagRawKey=`${s.id}|${subId}|${pi}||${ci}|diagraw`;
+                        const resp=JSON.parse(grades[diagRawKey]||'{}');
+                        row.push(resp['P1']||'—');
+                        row.push(resp['P2']||'—');
+                      }else if(ci===2){
+                        const notaKey=`${s.id}|${subId}|${pi}||${ci}|nota`;
+                        const cotejoKey=`${s.id}|${subId}|${pi}|${ci}|co`;
+                        const obsKey=`${s.id}|${subId}|${pi}|${ci}|obs`;
+                        const escKey=`escact|${s.id}|${subId}|${pi}|${ci}`;
+                        const nota=grades[notaKey]||'—';
+                        const cotejo=grades[cotejoKey]||'—';
+                        const obs=grades[obsKey]||'—';
+                        const esc=grades[escKey]||'—';
+                        row.push(nota);
+                        row.push(cotejo);
+                        row.push(obs);
+                        row.push(esc);
+                      }
+                    });
+                    rows.push(row);
+                  });
+                  if(rows.length>1){exportToXLS(filename,rows);}else{alert('No hay datos para exportar. Asegúrate de haber guardado respuestas.');}
+                }} style={{padding:'6px 14px',background:'#8B5CF6',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
+                  📝 Respuestas Detalladas
                 </button>
                 <button onClick={()=>{
                   const{jsPDF}=window.jspdf||{};
@@ -4466,6 +5222,59 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                 </button>
               </div>
             </div>
+            {/* ═══ TABLA DE RESPUESTAS DETALLADAS (NUEVO) ═══ */}
+            <div style={{marginBottom:14,padding:14,background:'linear-gradient(135deg,#f0fdf4,#f5fff5)',borderRadius:12,border:'1px solid #d1fae5'}}>
+              <h3 style={{margin:'0 0 12px 0',fontSize:13,fontWeight:700,color:'#047857'}}>📝 Respuestas Detalladas por Alumno</h3>
+              <div style={{overflowX:'auto'}}>
+                <table style={{borderCollapse:'collapse',fontSize:11,minWidth:'100%',width:'100%',background:'white',borderRadius:8}}>
+                  <thead>
+                    <tr style={{background:'linear-gradient(135deg,#1e293b,#0f172a)',color:'white'}}>
+                      <th style={{padding:'10px 8px',textAlign:'left',minWidth:120,fontWeight:700,borderRight:'1px solid #e5e7eb'}}>Alumno</th>
+                      {comps.map((c,ci)=>{
+                        if(ci===0) return <React.Fragment key={ci}>{[...Array(10)].map((_,i)=><th key={`c1-${i}`} style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#6366F1',color:'white',fontSize:10}}>C1-P{i+1}</th>)}</React.Fragment>;
+                        if(ci===1) return <React.Fragment key={ci}><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#0EA5E9',color:'white',fontSize:10}}>C2-P1</th><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#0EA5E9',color:'white',fontSize:10}}>C2-P2</th></React.Fragment>;
+                        if(ci===2) return <React.Fragment key={ci}><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#10B981',color:'white',fontSize:10}}>Nota</th><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#10B981',color:'white',fontSize:10}}>Cotejo</th><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,borderRight:'1px solid #e5e7eb',background:'#10B981',color:'white',fontSize:10}}>Observ</th><th style={{padding:'10px 6px',textAlign:'center',fontWeight:700,background:'#10B981',color:'white',fontSize:10}}>Escala</th></React.Fragment>;
+                        return null;
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stsFiltered.map((s,si)=>{
+                      const examRawKey=`${s.id}|${subId}|${pi}||0|examenraw`;
+                      const diagRawKey=`${s.id}|${subId}|${pi}||1|diagraw`;
+                      const c3NotaKey=`${s.id}|${subId}|${pi}||2|nota`;
+                      // Para C3 instrumentos - scores guardados como:
+                      // Cotejo: sid|subid|pi|ci|co
+                      // Observación: sid|subid|pi|ci|obs
+                      // Escala Actitudes: escact|sid|subid|pi|ci
+                      const c3CotejoKey=`${s.id}|${subId}|${pi}|2|co`;
+                      const c3ObsKey=`${s.id}|${subId}|${pi}|2|obs`;
+                      const c3EscKey=`escact|${s.id}|${subId}|${pi}|2`;
+                      const examResp=JSON.parse(grades[examRawKey]||'{}');
+                      const diagResp=JSON.parse(grades[diagRawKey]||'{}');
+                      const c3Nota=grades[c3NotaKey]||'—';
+                      const c3Cotejo=grades[c3CotejoKey]||'—';
+                      const c3Obs=grades[c3ObsKey]||'—';
+                      const c3Esc=grades[c3EscKey]||'—';
+                      const pq=getExamClaves(s.gid||'');
+                      return(
+                        <tr key={s.id} style={{background:si%2===0?'#f9fafb':'white',borderBottom:'1px solid #e5e7eb'}}>
+                          <td style={{padding:'10px 8px',fontWeight:600,color:'#2d2f2f',textAlign:'left'}}>{s.name}</td>
+                          {comps.map((c,ci)=>{
+                            if(ci===0) return <React.Fragment key={ci}>{[...Array(10)].map((_,i)=>{const clave=pq[i]?.clave;const val=examResp[i+1]||'';const correct=val===clave?'✓':'✗';return <td key={`c1-${i}`} style={{padding:'8px 6px',textAlign:'center',background:val?(correct==='✓'?'#d1fae5':'#fee2e2'):'white',color:val?(correct==='✓'?'#065f46':'#7f1d1d'):'#999',fontWeight:val?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{val?`${val} ${correct}`:'—'}</td>;})}</React.Fragment>;
+                            if(ci===1) return <React.Fragment key={ci}><td style={{padding:'8px 6px',textAlign:'center',background:diagResp['P1']?'#dbeafe':'white',color:diagResp['P1']?'#0c4a6e':'#999',fontWeight:diagResp['P1']?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{diagResp['P1']||'—'}</td><td style={{padding:'8px 6px',textAlign:'center',background:diagResp['P2']?'#dbeafe':'white',color:diagResp['P2']?'#0c4a6e':'#999',fontWeight:diagResp['P2']?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{diagResp['P2']||'—'}</td></React.Fragment>;
+                            if(ci===2) return <React.Fragment key={ci}><td style={{padding:'8px 6px',textAlign:'center',background:c3Nota!=='—'?'#fef3c7':'white',color:c3Nota!=='—'?'#92400e':'#999',fontWeight:c3Nota!=='—'?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{c3Nota}</td><td style={{padding:'8px 6px',textAlign:'center',background:c3Cotejo!=='—'?'#e0f7ff':'white',color:c3Cotejo!=='—'?'#0c4a6e':'#999',fontWeight:c3Cotejo!=='—'?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{typeof c3Cotejo==='string'&&c3Cotejo!=='—'?'✓':c3Cotejo}</td><td style={{padding:'8px 6px',textAlign:'center',background:c3Obs!=='—'?'#e0f7ff':'white',color:c3Obs!=='—'?'#0c4a6e':'#999',fontWeight:c3Obs!=='—'?700:400,borderRight:'1px solid #e5e7eb',fontSize:10}}>{typeof c3Obs==='string'&&c3Obs!=='—'?'✓':c3Obs}</td><td style={{padding:'8px 6px',textAlign:'center',background:c3Esc!=='—'?'#e0f7ff':'white',color:c3Esc!=='—'?'#0c4a6e':'#999',fontWeight:c3Esc!=='—'?700:400,fontSize:10}}>{typeof c3Esc==='string'&&c3Esc!=='—'?'✓':c3Esc}</td></React.Fragment>;
+                            return null;
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {stsFiltered.length===0&&<p style={{fontSize:11,color:'#999',marginTop:8,textAlign:'center'}}>No hay alumnos o datos para mostrar</p>}
+            </div>
+
             {allUnits.length===0?(
               <Card><p style={{color:'var(--t3)',textAlign:'center',fontSize:12}}>No hay unidades configuradas para este bimestre. Ve a Configuración → Unidades para agregar.</p></Card>
             ):(
@@ -4654,8 +5463,8 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                     {col:'#60a5fa',icon:'📚',node:<select value={subId} onChange={e=>setSubId(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{visSubjects.map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>{s.name}</option>)}</select>},
                     {col:'#a78bfa',icon:'📅',node:<select value={pi} onChange={e=>setPi(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{(settings.periods||PERIODS).map((p,i)=><option key={i} value={i} style={{color:'#000'}}>{p}</option>)}</select>},
                     ...(curBimUnits.length>0?[{col:'#22d3ee',icon:'🔷',node:<select value={selUnit} onChange={e=>setSelUnit(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}>{curBimUnits.map(u=><option key={u.id} value={u.id} style={{color:'#000'}}>{u.name}</option>)}</select>}]:[]),
-                    {col:'#f472b6',icon:'🎓',node:<select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}><option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}</select>},
-                    {col:'#fbbf24',icon:'👥',node:<select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed'}}><option value="" style={{color:'#000'}}>Secc.</option>{(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}</select>},
+                    {col:'#f472b6',icon:'🎓',node:<select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:'pointer'}}><option value="" style={{color:'#000'}}>{scopeHasSubs?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}</select>},
+                    {col:'#fbbf24',icon:'👥',node:<select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:'#fff',fontSize:10,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed'}}><option value="" style={{color:'#000'}}>Secc.</option>{(selGradeObj?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}</select>},
                   ].map((f,fi)=>(
                     <div key={fi} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:`${f.col}20`,border:`1px solid ${f.col}50`}}>
                       <span style={{color:f.col,fontSize:12}}>{f.icon}</span>
@@ -4672,15 +5481,15 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
 
             {/* ── TABLA EXCEL ── */}
             <div style={{background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(0,0,0,0.08)',overflow:'hidden',border:'1px solid rgba(0,0,0,0.06)'}}>
-              <div style={{overflowX:'auto',overflowY:'visible'}}>
+              <div id="grades-tbl-scroll" style={{overflowX:'auto',overflowY:'visible'}} onScroll={e=>{const o=document.getElementById('grades-stats-scroll');if(o&&o.scrollLeft!==e.target.scrollLeft)o.scrollLeft=e.target.scrollLeft;}}>
                 <table style={{borderCollapse:'collapse',fontSize:11,minWidth:'max-content',width:'100%'}}>
 
                   {/* ── THEAD: 3 filas ── */}
                   <thead>
                     {/* Fila 1: N° | Alumno | COMP 1 (span 9) | COMP 2 (span 9) | COMP 3 (span 9) | Prom General */}
                     <tr>
-                      <th rowSpan={3} style={{padding:'0 10px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:0,zIndex:5,minWidth:36,borderRight:'1px solid rgba(255,255,255,0.1)',textAlign:'center'}}>#</th>
-                      <th rowSpan={3} style={{padding:'12px 14px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:36,zIndex:5,minWidth:160,borderRight:'2px solid rgba(255,255,255,0.15)',textAlign:'left'}}>ALUMNO</th>
+                      <th rowSpan={3} style={{padding:'0 10px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:0,zIndex:5,minWidth:36,width:36,borderRight:'1px solid rgba(255,255,255,0.1)',textAlign:'center'}}>#</th>
+                      <th rowSpan={3} style={{padding:'12px 16px',background:'#0f172a',color:'#fff',fontSize:10,fontWeight:800,position:'sticky',left:36,zIndex:5,minWidth:220,borderRight:'2px solid rgba(255,255,255,0.15)',textAlign:'left'}}>ALUMNO</th>
                       {comps.map((comp,ci)=>(
                         <th key={ci} colSpan={9} style={{padding:'10px 6px',textAlign:'center',fontSize:11,fontWeight:800,color:'#fff',background:COMP_COLORS[ci%COMP_COLORS.length],borderLeft:'2px solid rgba(255,255,255,0.2)',letterSpacing:.5}}>
                           C{ci+1}: {comp.name}
@@ -4697,23 +5506,38 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                         const compCol=COMP_COLORS[ci%COMP_COLORS.length];
                         return[
                           // Promedio de la competencia (primer col de las 9)
-                          <th key={`prom-${ci}`} style={{padding:'8px 6px',background:`${compCol}33`,color:compCol,fontSize:9,fontWeight:800,textAlign:'center',minWidth:54,borderLeft:'2px solid rgba(0,0,0,0.08)',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>
+                          <th key={`prom-${ci}`} style={{padding:'8px 6px',background:`${compCol}33`,color:compCol,fontSize:9,fontWeight:800,textAlign:'center',minWidth:70,borderLeft:'2px solid rgba(0,0,0,0.08)',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>
                             PROM<br/>C{ci+1}
                           </th>,
                           // 8 slots de instrumentos
                           ...Array.from({length:8},(_,slotIdx)=>{
                             const slotKey=getExcelSlots(activeUnitId,ci)[slotIdx];
                             const instr=slotKey?ALL_INSTRS.find(x=>x.k===slotKey)||null:null;
+                            const stats=instr?getInstrumentStats(stsFiltered,grades,subId,parseInt(pi),ci,slotKey,activeUnitId,sc):null;
                             const isOpen=instrSelectorOpen?.ci===ci&&instrSelectorOpen?.slot===slotIdx;
                             return(
                               <th key={`slot-${ci}-${slotIdx}`}
-                                style={{padding:'4px 2px',background:instr?`${instr.bg}`:'#f8fafc',fontSize:9,fontWeight:700,textAlign:'center',minWidth:52,borderLeft:'1px solid rgba(0,0,0,0.06)',borderBottom:'1px solid rgba(0,0,0,0.06)',position:'relative',cursor:'pointer'}}
+                                style={{padding:'4px 2px',background:instr?`${instr.bg}`:'#f8fafc',fontSize:9,fontWeight:700,textAlign:'center',minWidth:70,borderLeft:'1px solid rgba(0,0,0,0.06)',borderBottom:'1px solid rgba(0,0,0,0.06)',position:'relative',cursor:'pointer'}}
                                 onClick={e=>{e.stopPropagation();setInstrSelectorOpen(isOpen?null:{ci,slot:slotIdx});}}>
                                 {instr?(
                                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
                                     <span style={{fontSize:10,fontWeight:800,color:instr.c}}>{instr.s}</span>
                                     <span style={{fontSize:7,color:instr.c,opacity:.8,whiteSpace:'nowrap'}}>{instr.l}</span>
-                                    <span style={{fontSize:7,color:'#ef4444',cursor:'pointer'}} title="Quitar instrumento" onClick={e=>{e.stopPropagation();setExcelSlot(activeUnitId,ci,slotIdx,null);setInstrSelectorOpen(null);}}>×</span>
+                                    {stats&&(
+                                      <div style={{fontSize:6,color:'#64748b',display:'flex',alignItems:'center',gap:1,justifyContent:'center',marginTop:1,paddingTop:2,borderTop:'1px solid rgba(0,0,0,0.08)',width:'100%'}}>
+                                        <span title="Cumplidos">✓{stats.cumplidos}</span>
+                                        <span title="Incumplidos">✗{stats.incumplidos}</span>
+                                      </div>
+                                    )}
+                                    <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
+                                      <button
+                                        style={{padding:'3px 8px',background:instr.c,color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:700,fontSize:10,fontFamily:'inherit',lineHeight:1.2,boxShadow:`0 2px 6px ${instr.c}44`}}
+                                        title="Abrir planilla tipo Excel"
+                                        onClick={e=>{e.stopPropagation();const pd=getPlanillaData({students:stsFiltered,grades,subId,pi,unitId:activeUnitId,ci,instrKey:instr.k,slotIdx,gradeDefs,comps,settings});setPlanillaModal({instrKey:instr.k,ci,slotIdx,title:`Planilla ${instr.l} — ${comp.name}`,subtitle:`${visSubjects.find(s=>s.id===subId)?.name||'—'} · ${(settings.periods||PERIODS)[pi]}${activeUnitId&&activeUnitId!=='__legacy__'?' · '+(curBimUnits.find(u=>u.id===activeUnitId)?.name||''):''}`,...pd});}}>
+                                        📋 Planilla
+                                      </button>
+                                      <button style={{padding:'2px 5px',background:'transparent',color:'#ef4444',border:'none',borderRadius:4,cursor:'pointer',fontSize:12,fontFamily:'inherit',lineHeight:1}} title="Quitar instrumento" onClick={e=>{e.stopPropagation();setExcelSlot(activeUnitId,ci,slotIdx,null);setInstrSelectorOpen(null);}}>×</button>
+                                    </div>
                                   </div>
                                 ):(
                                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
@@ -4786,7 +5610,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                             {si+1}
                           </td>
                           {/* Nombre */}
-                          <td style={{padding:'10px 14px',position:'sticky',left:36,zIndex:2,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)'}}>
+                          <td style={{padding:'12px 16px',position:'sticky',left:36,zIndex:2,background:'inherit',borderRight:'2px solid rgba(0,0,0,0.06)',minWidth:220}}>
                             <div style={{display:'flex',alignItems:'center',gap:10}}>
                               <Avatar s={s} size={30}/>
                               <div>
@@ -4811,7 +5635,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                               ...Array.from({length:8},(_,slotIdx)=>{
                                 const instr=activeInstrsList[slotIdx];
                                 if(!instr){
-                                  return<td key={`empty-${ci}-${slotIdx}`} style={{background:'#f8fafc',borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:52}}/>;
+                                  return<td key={`empty-${ci}-${slotIdx}`} style={{background:'#f8fafc',borderLeft:'1px solid rgba(0,0,0,0.04)',minWidth:70}}/>;
                                 }
                                 const val=getInstrVal(s.id,ci,instr.k,slotIdx);
                                 const hasData=val!==null&&val!==''&&val!==undefined;
@@ -4851,6 +5675,131 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                   </tbody>
                 </table>
               </div>
+
+              {/* ── BARRA DE REPORTE POR COLUMNA ── */}
+              {(()=>{
+                if(!comps.length||!stsFiltered.length)return null;
+
+                // Convierte valor RAW de un instrumento → literal AD/A/B/C (igual que la tabla)
+                const instrLit=(v,instrK)=>{
+                  if(v===null||v===undefined||v==='')return null;
+                  // Rúbrica: guardada como string "AD,A,B,A" o array
+                  if(instrK==='rub'||(typeof v==='string'&&v.indexOf(',')>=0)){
+                    const niv=typeof v==='string'?v.split(','):Array.isArray(v)?v:[];
+                    return niv.length?rubLevel(niv):null;
+                  }
+                  // Ya es literal
+                  if(typeof v==='string'&&['AD','A','B','C'].includes(v))return v;
+                  const n=parseFloat(v);
+                  if(isNaN(n))return null;
+                  // Numérico (0-20): misma lógica que fmtLitVal → pct2lit(n/20*100)
+                  // A solo con 100% (20/20), B con 55-99% (11-19), C con <55% (0-10)
+                  const pct=Math.round((n/20)*100);
+                  return pct2lit(pct); // nunca devuelve AD para instrumentos no-rúbrica
+                };
+
+                // Convierte PROM de competencia (escala 0-20) → literal
+                // canAD = true solo si algún slot de esa competencia usa rúbrica
+                const promLit=(v,canAD)=>{
+                  if(v===null||v===undefined)return null;
+                  const n=parseFloat(v);
+                  if(isNaN(n))return null;
+                  if(canAD&&n>=18)return'AD';
+                  if(n>=14)return'A';
+                  if(n>=11)return'B';
+                  return'C';
+                };
+
+                const colStats=comps.flatMap((comp,ci)=>{
+                  const compCol=COMP_COLORS[ci%COMP_COLORS.length];
+                  const compVals=stsFiltered.map(s=>{const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);return typeof cv==='number'?cv:null;});
+                  const slotEntries=Array.from({length:8},(_,slotIdx)=>{
+                    const slotKey=getExcelSlots(activeUnitId,ci)[slotIdx];
+                    const instr=slotKey?ALL_INSTRS.find(x=>x.k===slotKey)||null:null;
+                    if(!instr)return null;
+                    const lits=stsFiltered.map(s=>instrLit(getInstrVal(s.id,ci,instr.k,slotIdx),instr.k));
+                    return{instr,lits};
+                  }).filter(Boolean);
+                  // PROM puede ser AD solo si algún slot usa rúbrica
+                  const canAD=slotEntries.some(e=>e.instr.k==='rub');
+                  const promLits=compVals.map(v=>promLit(v,canAD));
+                  return[{type:'prom',comp,ci,compCol,lits:promLits,canAD},...slotEntries.map(s=>({type:'instr',ci,compCol,...s}))];
+                });
+
+                // PROM GENERAL: puede ser AD si alguna competencia lo permite
+                const anyCanAD=colStats.some(c=>c.canAD);
+                const ovrVals=stsFiltered.map(s=>{const avgs=comps.map((comp,ci)=>{const cv=activeUnitId==='__legacy__'?compScore(grades,s.id,subId,parseInt(pi),ci,comp,sc,null):unitCompScore(grades,s.id,subId,parseInt(pi),activeUnitId,ci,comp,sc);return typeof cv==='number'?cv:null;}).filter(v=>v!==null);return avgs.length>0?parseFloat((avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1)):null;});
+                const ovrLits=ovrVals.map(v=>promLit(v,anyCanAD));
+
+                const ROW_H=16;
+                const StatCell=({lits,bg,borderLeft,label,w})=>{
+                  const W=w||70;
+                  const ad=lits.filter(l=>l==='AD').length;
+                  const le=lits.filter(l=>l==='A').length;
+                  const pr=lits.filter(l=>l==='B').length;
+                  const in_=lits.filter(l=>l==='C').length;
+                  const apro=lits.filter(l=>l==='A'||l==='AD').length;
+                  const desap=lits.filter(l=>l==='B'||l==='C').length;
+                  const resp=lits.filter(l=>l!==null).length;
+                  const noResp=lits.filter(l=>l===null).length;
+                  const row=(txt,val,col,bgt)=>(
+                    <div style={{height:ROW_H,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 5px',background:bgt||'transparent',borderBottom:'1px solid rgba(0,0,0,0.04)'}}>
+                      <span style={{fontSize:8,color:col,fontWeight:700,whiteSpace:'nowrap'}}>{txt}</span>
+                      <span style={{fontSize:9,color:col,fontWeight:900}}>{val}</span>
+                    </div>
+                  );
+                  return(
+                    <div style={{width:W,minWidth:W,maxWidth:W,background:bg||'#f8fafc',borderLeft:borderLeft||'1px solid rgba(0,0,0,0.06)',flexShrink:0,flexGrow:0,display:'flex',flexDirection:'column'}}>
+                      <div style={{height:ROW_H,display:'flex',alignItems:'center',justifyContent:'center',borderBottom:'2px solid rgba(0,0,0,0.1)',padding:'0 2px'}}>
+                        <span style={{fontSize:7,fontWeight:800,color:'#475569',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:W-4}}>{label||''}</span>
+                      </div>
+                      {row('AD',ad,'#7c3aed','rgba(124,58,237,0.06)')}
+                      {row('Lgr. Esp.',le,'#16a34a','rgba(22,163,74,0.06)')}
+                      {row('Proceso',pr,'#d97706','rgba(217,119,6,0.06)')}
+                      {row('Inicio',in_,'#dc2626','rgba(220,38,38,0.06)')}
+                      <div style={{height:1,background:'rgba(0,0,0,0.12)'}}/>
+                      {row('Con nota',resp,'#64748b','rgba(100,116,139,0.05)')}
+                      {row('Sin nota',noResp,'#94a3b8','transparent')}
+                      <div style={{height:1,background:'rgba(0,0,0,0.12)'}}/>
+                      {row('✅ Apro.',apro,'#16a34a','rgba(22,163,74,0.08)')}
+                      {row('❌ Desap.',desap,'#dc2626','rgba(220,38,38,0.08)')}
+                    </div>
+                  );
+                };
+
+                return(
+                  <div id="grades-stats-scroll" style={{borderTop:'3px solid #0374B5',background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)',overflowX:'auto',position:'relative'}} onScroll={e=>{const o=document.getElementById('grades-tbl-scroll');if(o&&o.scrollLeft!==e.target.scrollLeft)o.scrollLeft=e.target.scrollLeft;}}>
+                    <div style={{display:'flex',alignItems:'stretch',minWidth:'max-content'}}>
+                      {/* Panel leyenda sticky */}
+                      <div style={{width:256,minWidth:256,background:'#0f172a',flexShrink:0,position:'sticky',left:0,zIndex:3,display:'flex',flexDirection:'column'}}>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',borderBottom:'2px solid rgba(255,255,255,0.15)'}}>
+                          <span style={{fontSize:9,fontWeight:800,color:'#93c5fd'}}>📊 REPORTE POR COLUMNA</span>
+                        </div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(124,58,237,0.15)',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'#c4b5fd',fontWeight:700}}>AD — Logro destacado (18-20)</span></div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(22,163,74,0.12)',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'#86efac',fontWeight:700}}>Lgr. Esp. — Logro esperado (14-17)</span></div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(217,119,6,0.12)',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'#fde68a',fontWeight:700}}>Proceso — En proceso (11-13)</span></div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(220,38,38,0.12)',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'#fca5a5',fontWeight:700}}>Inicio — En inicio (0-10)</span></div>
+                        <div style={{height:1,background:'rgba(255,255,255,0.15)'}}/>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'rgba(255,255,255,0.55)'}}>Con nota — tienen calificación</span></div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'rgba(255,255,255,0.4)'}}>Sin nota — no calificados</span></div>
+                        <div style={{height:1,background:'rgba(255,255,255,0.15)'}}/>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(22,163,74,0.1)',borderBottom:'1px solid rgba(255,255,255,0.05)'}}><span style={{fontSize:8,color:'#4ade80',fontWeight:700}}>✅ Aprobados (≥14)</span></div>
+                        <div style={{height:ROW_H,display:'flex',alignItems:'center',padding:'0 10px',background:'rgba(220,38,38,0.1)'}}><span style={{fontSize:8,color:'#f87171',fontWeight:700}}>❌ Desaprobados (&lt;14)</span></div>
+                      </div>
+                      {/* Celdas por columna */}
+                      {colStats.map((col,idx)=>{
+                        if(col.type==='prom'){
+                          return <StatCell key={`rs-prom-${col.ci}`} lits={col.lits} bg={`${col.compCol}18`} borderLeft={`2px solid ${col.compCol}`} label={`PROM C${col.ci+1}`} w={70}/>;
+                        }else{
+                          return <StatCell key={`rs-instr-${col.ci}-${idx}`} lits={col.lits||[]} bg={col.instr?col.instr.bg+'55':'#f8fafc'} borderLeft="1px solid rgba(0,0,0,0.06)" label={col.instr?col.instr.s:''} w={70}/>;
+                        }
+                      })}
+                      {/* Columna PROM GENERAL */}
+                      <StatCell lits={ovrLits} bg="rgba(59,130,246,0.1)" borderLeft="2px solid #3b82f6" label="PROM GEN" w={60}/>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Footer */}
               <div style={{padding:'10px 16px',background:'linear-gradient(135deg,#f8fafc,#f1f5f9)',borderTop:'1px solid rgba(0,0,0,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
@@ -4992,7 +5941,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                 <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(236,72,153,0.2)',border:'1px solid rgba(236,72,153,0.4)'}}>
                   <span style={{color:'#f472b6',fontWeight:700,fontSize:11}}>🎓</span>
                   <select value={fGrade} onChange={e=>{setFGrade(e.target.value);setFSec('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer',minWidth:70}}>
-                    <option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>
+                    <option value="" style={{color:'#000'}}>{scopeHasSubs?'Mis grados':'Todos'}</option>
                     {availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}
                   </select>
                 </div>
@@ -5000,7 +5949,7 @@ function CoevalModal({st,subid,pi,uid,ci,compName,grades,onSave,onClose,settings
                   <span style={{color:'#fbbf24',fontWeight:700,fontSize:11}}>👥</span>
                   <select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrade} style={{background:'transparent',border:'none',color:fSec?'#fff':'rgba(255,255,255,0.5)',fontSize:11,fontFamily:'inherit',cursor:fGrade?'pointer':'not-allowed',minWidth:50}}>
                     <option value="" style={{color:'#000'}}>Sec</option>
-                    {(selGradeObj?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
+                    {(selGradeObj?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
                   </select>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:4,padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)'}}>
@@ -5245,16 +6194,17 @@ function ChartRadar({data,labels,color}){
 
 function StudentProfile({students,subjects,grades,incidents,attendance,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const availGrades=scope.isTeacher?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const availGrades=scopeHasSubs?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const[selGid,setSelGid]=useState('');const[selSid,setSelSid]=useState('');const[selStId,setSelStId]=useState('');
   const[activeChart,setActiveChart]=useState('evolution');
   const[profileTab,setProfileTab]=useState('academico');
   const sc=settings.scaleType||'literal';
   const selGrade=availGrades.find(g=>g.id===selGid);
-  const availSecs=(selGrade?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
-  const stsInSec=students.filter(s=>s.gid===selGid&&s.sid===selSid&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
+  const availSecs=(selGrade?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id));
+  const stsInSec=students.filter(s=>s.gid===selGid&&s.sid===selSid&&(!scopeHasSubs||scope.myStudentIds.includes(s.id)));
   const student=students.find(s=>s.id===selStId);
-  const subsForGrade=scope.isTeacher?scope.mySubjects:subjects.filter(s=>(s.gids||[]).includes(selGid));
+  const subsForGrade=scopeHasSubs?scope.mySubjects:subjects.filter(s=>(s.gids||[]).includes(selGid));
   const totalAbs=attendance.filter(a=>a.sid===selStId&&a.status==='F').length;
   const totalLate=attendance.filter(a=>a.sid===selStId&&a.status==='T').length;
   const totalJust=attendance.filter(a=>a.sid===selStId&&a.status==='J').length;
@@ -5887,11 +6837,12 @@ const downloadCSVTemplate=(gradeDefs,fixedGid,fixedSid)=>{
 };
 
 // ── GRADOS PANEL ───────────────────────────────────────────────
-function GradosPanel({gradeDefs,students,onSaveGrades}){
+function GradosPanel({gradeDefs,students,onSaveGrades,onNavigateToTab}){
   const[nav,setNav]=useState('lista');
   const[selGid,setSelGid]=useState(null);
   const[newGradeName,setNewGradeName]=useState('');
   const[newSecName,setNewSecName]=useState('');
+  const[clavesModal,setClavesModal]=useState(null);// {gid,tipo}
   
   const selGrade=gradeDefs.find(g=>g.id===selGid);
   const totalStudents=students.length;
@@ -6013,7 +6964,7 @@ function GradosPanel({gradeDefs,students,onSaveGrades}){
   // ── MAIN LIST VIEW ──
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'1.5rem',padding:'28px 32px',marginBottom:20,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',zIndex:1}}>
@@ -6099,9 +7050,16 @@ function GradosPanel({gradeDefs,students,onSaveGrades}){
                   ))}
                   {!secCount&&<span style={{fontSize:11,color:'#9ca3af'}}>Sin secciones</span>}
                 </div>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,padding:'10px',background:`${col}10`,borderRadius:12,cursor:'pointer'}}>
-                  <span style={{fontSize:13,fontWeight:700,color:col}}>Gestionar secciones</span>
-                  <span className="material-symbols-outlined" style={{fontSize:18,color:col}}>arrow_forward</span>
+                <div style={{display:'flex',gap:6,marginTop:4}}>
+                  <button onClick={(e)=>{e.stopPropagation();openGrade(g.id);}} style={{flex:1,padding:'10px',background:`${col}10`,color:col,border:'none',borderRadius:12,fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                    <span className="material-symbols-outlined" style={{fontSize:16}}>apartment</span> Secciones
+                  </button>
+                  <button onClick={(e)=>{e.stopPropagation();if(onNavigateToTab){localStorage.setItem('v5_preselected_grade',g.id);onNavigateToTab('grade_reg');}}} style={{flex:1,padding:'10px',background:`${col}10`,color:col,border:'none',borderRadius:12,fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                    <span className="material-symbols-outlined" style={{fontSize:16}}>grade</span> Notas
+                  </button>
+                  <button onClick={(e)=>{e.stopPropagation();setClavesModal({gid:g.id,tipo:'examen'});}} style={{padding:'10px',background:`${col}10`,color:col,border:'none',borderRadius:12,fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                    <span className="material-symbols-outlined" style={{fontSize:16}}>key</span> Claves
+                  </button>
                 </div>
               </div>
             </div>
@@ -6115,6 +7073,28 @@ function GradosPanel({gradeDefs,students,onSaveGrades}){
           </div>
         )}
       </div>
+      {/* Modal de claves del grado */}
+      {clavesModal&&(
+        <PlanillaModal
+          title={clavesModal.tipo==='examen'?'Claves de Examen':'Claves de Diagnóstico'}
+          subtitle={`${gradeDefs.find(g=>g.id===clavesModal.gid)?.name||''}`}
+          headers={clavesModal.tipo==='examen'?getExamClaves(clavesModal.gid).map(p=>`P${p.n}`):getDiagClaves(clavesModal.gid,'lee').map(k=>`P${k.n}`)}
+          rows={clavesModal.tipo==='examen'?[getExamClaves(clavesModal.gid).map(p=>p.clave)]:[getDiagClaves(clavesModal.gid,'lee').map(k=>k.clave)]}
+          rowLabels={['Clave correcta']}
+          allowEdit={true}
+          onClose={()=>setClavesModal(null)}
+          onSave={(data)=>{
+            if(clavesModal.tipo==='examen'){
+              const preguntas=getExamClaves(clavesModal.gid).map((p,i)=>({...p,clave:(data[0]&&data[0][i])||p.clave}));
+              saveExamClaves(clavesModal.gid,preguntas,{role:'admin'});
+            }else{
+              const claves=getDiagClaves(clavesModal.gid,'lee').map((k,i)=>({...k,clave:(data[0]&&data[0][i])||k.clave}));
+              saveDiagClaves(clavesModal.gid,'lee',claves,{role:'admin'});
+            }
+            setClavesModal(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -6562,7 +7542,7 @@ function AlumnosPanel({gradeDefs,students,onSaveStudents}){
   // ── MAIN LIST VIEW ──
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'1.5rem',padding:'28px 32px',marginBottom:20,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',zIndex:1}}>
@@ -7506,8 +8486,9 @@ function Subjects({subjects,onSave,gradeDefs,students,users}){
 // ── CONSOLIDADO ───────────────────────────────────────────
 function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
   const[pi,setPi]=useState('all');const[fg,setFg]=useState('');const[fs,setFs]=useState('');const sc=settings.scaleType||'literal';
-  const hasAssignments=scope.isTeacher&&scope.myGids.length>0;
+  const hasAssignments=scopeHasSubs&&scope.myGids.length>0;
   const availGrades=hasAssignments?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const selG=availGrades.find(g=>g.id===fg);
   const filt=students.filter(s=>{
@@ -7516,7 +8497,7 @@ function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
     if(fs&&s.sid!==fs)return false;
     return true;
   });
-  const subs=scope.isTeacher?scope.mySubjects:fg?subjects.filter(s=>s.gids&&s.gids.includes(fg)):subjects;
+  const subs=scopeHasSubs?scope.mySubjects:fg?subjects.filter(s=>s.gids&&s.gids.includes(fg)):subjects;
   
   const getBimUnitsForSub=(subid)=>{
     try{const all=JSON.parse(localStorage.getItem('v5_bim_units')||'null')||{};return all[subid]||{};}catch{return {};}
@@ -7538,8 +8519,8 @@ function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
   return(<div className="fade">
     <PHdr title="Consolidado" icon="📊"/>
     <Card><div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,alignItems:'end'}}>
-      <div><Lbl c="GRADO"/><select value={fg} onChange={e=>{setFg(e.target.value);setFs('');}}><option value="">{scope.isTeacher?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></div>
-      <div><Lbl c="SECCIÓN"/><select value={fs} onChange={e=>setFs(e.target.value)} disabled={!fg}><option value="">Todas</option>{(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id}>Sec. {s.name}</option>)}</select></div>
+      <div><Lbl c="GRADO"/><select value={fg} onChange={e=>{setFg(e.target.value);setFs('');}}><option value="">{scopeHasSubs?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></div>
+      <div><Lbl c="SECCIÓN"/><select value={fs} onChange={e=>setFs(e.target.value)} disabled={!fg}><option value="">Todas</option>{(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id}>Sec. {s.name}</option>)}</select></div>
       <div><Lbl c="PERÍODO"/><select value={pi} onChange={e=>setPi(e.target.value)}><option value="all">📅 Anual</option>{(settings.periods||PERIODS).map((p,i)=><option key={i} value={i}>{p}</option>)}</select></div>
     </div></Card>
     <div style={{overflowX:'auto'}}>
@@ -7590,19 +8571,157 @@ function Consolidado({students,subjects,grades,gradeDefs,settings,auth}){
         </div>
       ))}
     </div>
+    {/* Planilla Modal */}
+    {planillaModal&&(
+      <PlanillaModal
+        title={planillaModal.title}
+        subtitle={planillaModal.subtitle}
+        instrKey={planillaModal.instrKey}
+        headers={planillaModal.headers}
+        rows={planillaModal.rows}
+        rowLabels={planillaModal.rowLabels}
+        comp={comps?.[planillaModal.ci]}
+        students={stsFiltered}
+        grades={grades}
+        subId={subId}
+        pi={pi}
+        unitId={activeUnitId}
+        ci={planillaModal.ci}
+        slotIdx={planillaModal.slotIdx}
+        gradeDefs={gradeDefs}
+        comps={comps}
+        settings={settings}
+        onClose={()=>setPlanillaModal(null)}
+        onSave={(newRows)=>{
+          const ng={...grades};
+          const ci=planillaModal.ci;
+          const comp=comps?.[ci];
+          newRows.forEach((row,ri)=>{
+            const s=stsFiltered[ri];
+            if(!s)return;
+            const pfxBase=activeUnitId&&activeUnitId!=='__legacy__'?`${s.id}|${subId}|${pi}|${activeUnitId}|${ci}`:`${s.id}|${subId}|${pi}|${ci}`;
+            const slotPfx=`${pfxBase}|sl${planillaModal.slotIdx||0}`;
+            if(planillaModal.instrKey==='examen'){
+              const gid=s.gid||'';
+              const preguntas=getExamClaves(gid);
+              const resp={};
+              row.forEach((val,ci2)=>{if(preguntas[ci2])resp[preguntas[ci2].n]=val;});
+              const hasAny=row.some(v=>v&&v.trim()!=='');
+              if(hasAny){
+                ng[`${slotPfx}|examenraw`]=JSON.stringify(resp);
+                const aciertos=preguntas.filter(p=>resp[p.n]===p.clave).length;
+                ng[`${slotPfx}|examen`]=examNota(aciertos);
+              }else{
+                delete ng[`${slotPfx}|examenraw`];
+                delete ng[`${slotPfx}|examen`];
+              }
+            }else if(planillaModal.instrKey==='diag'){
+              const gid=s.gid||'';
+              const claves=getDiagClaves(gid,'lee');
+              const resp={};
+              row.forEach((val,ci2)=>{if(claves[ci2])resp[`P${claves[ci2].n}`]=val;});
+              const hasAny=row.some(v=>v&&v.trim()!=='');
+              if(hasAny){
+                ng[`${pfxBase}|diagraw`]=JSON.stringify(resp);
+                const aciertos=claves.filter(k=>resp[`P${k.n}`]===k.clave).length;
+                ng[`${pfxBase}|diag`]=diagNota(aciertos,claves.length);
+              }else{
+                delete ng[`${pfxBase}|diagraw`];
+                delete ng[`${pfxBase}|diag`];
+              }
+            }else if(planillaModal.instrKey==='co'){
+              const criterios=comp?.cotCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:0);
+              let checked=0;
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|co|${ri2}`;
+                if(val==='Sí'){ng[k]=true;checked++;hasAny=true;}
+                else if(val==='No'){ng[k]=false;hasAny=true;}
+                else{delete ng[k];}
+              }
+              const n=criterios.length||numItems;
+              if(hasAny&&n>0){
+                const sc2=parseFloat(((checked/n)*20).toFixed(1));
+                ng[`${slotPfx}|co`]=sc2;
+              }else{delete ng[`${slotPfx}|co`];}
+            }else if(planillaModal.instrKey==='rub'){
+              const criterios=comp?.rubCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:0);
+              const vals=[];
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|rub|${ri2}`;
+                if(val){ng[k]=val;vals.push(val);hasAny=true;}
+                else{delete ng[k];}
+              }
+              if(hasAny&&vals.length>0){
+                const sum=vals.reduce((a,v)=>{
+                  const num=v==='AD'?17:v==='A'?14:v==='B'?11:v==='C'?5:parseFloat(v)||0;
+                  return a+num;
+                },0);
+                ng[`${slotPfx}|rub`]=Math.round(sum/vals.length);
+              }else{delete ng[`${slotPfx}|rub`];}
+            }else if(planillaModal.instrKey==='obs'){
+              const criterios=comp?.obsCrits||comp?.caps||[];
+              const numItems=Math.max(criterios.length,row.length>0?row.length:1);
+              let hasAny=false;
+              for(let ri2=0;ri2<numItems;ri2++){
+                const val=row[ri2]||'';
+                const k=`${slotPfx}|obs|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              }
+              if(!hasAny){
+                delete ng[`${slotPfx}|obs`];
+                for(let ri2=0;ri2<numItems;ri2++)delete ng[`${slotPfx}|obs|${ri2}`];
+              }
+            }else if(planillaModal.instrKey==='port'){
+              let hasAny=false;
+              row.forEach((val,ri2)=>{
+                const k=`${slotPfx}|port|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              });
+              if(!hasAny){delete ng[`${slotPfx}|port`];}
+            }else if(planillaModal.instrKey==='anec'){
+              const val=row[0]||'';
+              if(val)ng[`${slotPfx}|anec`]=val;
+              else delete ng[`${slotPfx}|anec`];
+            }else if(planillaModal.instrKey==='escact'){
+              let hasAny=false;
+              row.forEach((val,ri2)=>{
+                const k=`${slotPfx}|escact|${ri2}`;
+                if(val){ng[k]=val;hasAny=true;}
+                else{delete ng[k];}
+              });
+              if(!hasAny){delete ng[`${slotPfx}|escact`];}
+            }else{
+              const val=row[0]||'';
+              if(val)ng[`${slotPfx}|${planillaModal.instrKey}`]=val;
+              else delete ng[`${slotPfx}|${planillaModal.instrKey}`];
+            }
+          });
+          onSave(ng);
+        }}
+      />
+    )}
   </div>);
 }
 
 // ── LIBRETA ────────────────────────────────────────────────
 function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const availGrades=scope.isTeacher?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const availGrades=scopeHasSubs?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const[fGid,setFGid]=useState('');const[fSid,setFSid]=useState('');const[stId,setStId]=useState('');const sc=settings.scaleType||'literal';
   const selG=availGrades.find(g=>g.id===fGid);
-  const availSecs=(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
-  const stsInSec=students.filter(s=>s.gid===fGid&&s.sid===fSid&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
+  const availSecs=(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id));
+  const stsInSec=students.filter(s=>s.gid===fGid&&s.sid===fSid&&(!scopeHasSubs||scope.myStudentIds.includes(s.id)));
   const student=students.find(s=>s.id===stId);
-  const subs=scope.isTeacher?scope.mySubjects:fGid?subjects.filter(s=>(s.gids||[]).includes(fGid)):subjects;
+  const subs=scopeHasSubs?scope.mySubjects:fGid?subjects.filter(s=>(s.gids||[]).includes(fGid)):subjects;
   const overall=student?studentAvg(grades,student.id,subs,sc,Object.fromEntries(subs.map(s=>[s.id,getAllBimUnits(s.id)]))):null;
   return(<div className="fade">
     <PHdr title="Libreta de notas" icon="📋"/>
@@ -7712,13 +8831,14 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
   const getPeriods=()=>settings.periods&&settings.periods.length===4?settings.periods:PERIODS;
   const periods=getPeriods();
   const scope=getTeacherScope(auth,subjects||[],gradeDefs,students);
-  const hasAssignments=scope.isTeacher&&scope.myGids.length>0;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const hasAssignments=scopeHasSubs&&scope.myGids.length>0;
   const availGrades=hasAssignments?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
 
   const[view,setView]=useState('registro');
   const[date,setDate]=useState(todayStr());
-  const[fg,setFg]=useState(()=>scope.isTeacher&&scope.myGids.length===1?scope.myGids[0]:'');
-  const[fs,setFs]=useState(()=>scope.isTeacher&&scope.mySids.length===1?scope.mySids[0]:'');
+  const[fg,setFg]=useState(()=>scopeHasSubs&&scope.myGids.length===1?scope.myGids[0]:'');
+  const[fs,setFs]=useState(()=>scopeHasSubs&&scope.mySids.length===1?scope.mySids[0]:'');
   const[bim,setBim]=useState(()=>{
     const today=todayStr();
     const pc=settings.periodsConf;
@@ -7893,7 +9013,7 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
             </div>
             <div style={{padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.2)'}}>
               <select value={fg} onChange={e=>{setFg(e.target.value);setFs('');}} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer'}}>
-                <option value="" style={{color:'#000'}}>{scope.isTeacher?'Mis grados':'Todos'}</option>
+                <option value="" style={{color:'#000'}}>{scopeHasSubs?'Mis grados':'Todos'}</option>
                 {availGrades.map(g=><option key={g.id} value={g.id} style={{color:'#000'}}>{g.name}</option>)}
               </select>
             </div>
@@ -7901,7 +9021,7 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
               <div style={{padding:'6px 12px',borderRadius:20,background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.2)'}}>
                 <select value={fs} onChange={e=>setFs(e.target.value)} style={{background:'transparent',border:'none',color:'#fff',fontSize:11,fontFamily:'inherit',cursor:'pointer'}}>
                   <option value="" style={{color:'#000'}}>Sec</option>
-                  {(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
+                  {(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id} style={{color:'#000'}}>S{s.name}</option>)}
                 </select>
               </div>
             )}
@@ -8032,8 +9152,8 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
           <div style={{background:'linear-gradient(135deg,#fff,#fefefe)',borderRadius:16,padding:20,marginBottom:16,boxShadow:'0 4px 20px rgba(0,0,0,0.04)',border:'1px solid rgba(0,0,0,0.06)'}}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,alignItems:'end'}}>
               <div><Lbl c="BIMESTRE"/><select value={bim} onChange={e=>setBim(parseInt(e.target.value))} style={{fontWeight:700,color:'var(--r)',fontFamily:'inherit'}}>{periods.map((p,i)=><option key={i} value={i}>{p}</option>)}</select></div>
-              <div><Lbl c="GRADO"/><select value={fg} onChange={e=>{setFg(e.target.value);setFs('');}} style={{fontFamily:'inherit'}}><option value="">{scope.isTeacher?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></div>
-              <div><Lbl c="SECCIÓN"/><select value={fs} onChange={e=>setFs(e.target.value)} disabled={!fg} style={{fontFamily:'inherit'}}><option value="">Todas</option>{(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id}>Sec. {s.name}</option>)}</select></div>
+              <div><Lbl c="GRADO"/><select value={fg} onChange={e=>{setFg(e.target.value);setFs('');}} style={{fontFamily:'inherit'}}><option value="">{scopeHasSubs?'Mis grados':'Todos'}</option>{availGrades.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></div>
+              <div><Lbl c="SECCIÓN"/><select value={fs} onChange={e=>setFs(e.target.value)} disabled={!fg} style={{fontFamily:'inherit'}}><option value="">Todas</option>{(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id)).map(s=><option key={s.id} value={s.id}>Sec. {s.name}</option>)}</select></div>
             </div>
           </div>
           {reportStudents.length>0&&(
@@ -8105,7 +9225,8 @@ function Libreta({students,subjects,grades,gradeDefs,settings,auth}){
 // ── SEGUIMIENTO ────────────────────────────────────────────
 function Seguimiento({students,gradeDefs,incidents,onSave,subjects,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const availGrades=scope.isTeacher?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const availGrades=scopeHasSubs?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const[fg,setFg]=useState('');const[fs,setFs]=useState('');const[stId,setStId]=useState('');const[sub,setSub]=useState('inc');
   const[form,setForm]=useState({type:'Tardanza reiterada',date:todayStr(),desc:'',action:''});
   const[pf,setPf]=useState({date:todayStr(),reason:'Rendimiento académico',parent:'',desc:'',commitment:''});
@@ -8113,8 +9234,8 @@ function Seguimiento({students,gradeDefs,incidents,onSave,subjects,auth}){
   const ITYPES=['Tardanza reiterada','Inasistencia','Comportamiento inadecuado','Falta de respeto','No presentó tarea','Logro destacado','Reconocimiento','Otro'];
   const PREASONS=['Rendimiento académico','Conducta','Inasistencias','Citación urgente','Seguimiento','Otro'];
   const selG=availGrades.find(g=>g.id===fg);
-  const availSecs=(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
-  const stsInSec=students.filter(s=>s.gid===fg&&s.sid===fs&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
+  const availSecs=(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id));
+  const stsInSec=students.filter(s=>s.gid===fg&&s.sid===fs&&(!scopeHasSubs||scope.myStudentIds.includes(s.id)));
   const student=students.find(s=>s.id===stId);
   const sInc=incidents.filter(i=>i.type!=='__cmt__'&&i.type!=='__parent__'&&i.sid===stId);
   const sCmt=incidents.filter(i=>i.type==='__cmt__'&&i.sid===stId);
@@ -8230,7 +9351,8 @@ const NORMAS_DATA=[
 
 function NormasConvivencia({students,gradeDefs,normasReg,onSave,subjects,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const availGrades=scope.isTeacher?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const availGrades=scopeHasSubs?gradeDefs.filter(g=>scope.myGids.includes(g.id)):gradeDefs;
   const[fg,setFg]=useState('');
   const[fs,setFs]=useState('');
   const[selEje,setSelEje]=useState('n1');
@@ -8246,8 +9368,8 @@ function NormasConvivencia({students,gradeDefs,normasReg,onSave,subjects,auth}){
   const[saved,setSaved]=useState(false);
 
   const selG=availGrades.find(g=>g.id===fg);
-  const availSecs=(selG?.secs||[]).filter(s=>!scope.isTeacher||scope.mySids.includes(s.id));
-  const stsInSec=students.filter(s=>s.gid===fg&&s.sid===fs&&(!scope.isTeacher||scope.myStudentIds.includes(s.id)));
+  const availSecs=(selG?.secs||[]).filter(s=>!scopeHasSubs||scope.mySids.includes(s.id));
+  const stsInSec=students.filter(s=>s.gid===fg&&s.sid===fs&&(!scopeHasSubs||scope.myStudentIds.includes(s.id)));
   const ejeActual=NORMAS_DATA.find(e=>e.id===selEje)||NORMAS_DATA[0];
 
   const toggleSt=id=>{
@@ -8451,7 +9573,7 @@ const genPDF=(title,content,filename)=>{
   window.open(doc.output('bloburl'),'_blank');
 };
 
-// Carnet Estudiantil - Academic Atelier
+// Carnet Estudiantil - Modern Academy v43
 function CarnetReport({students,gradeDefs,settings}){
   const getGradeName=(gid)=>gradeDefs.find(g=>g.id===gid)?.name||'';
   const getSecName=(gid,sid)=>{const g=gradeDefs.find(x=>x.id===gid);return g?.secs?.find(s=>s.id===sid)?.name||'';};
@@ -8505,7 +9627,7 @@ function CarnetReport({students,gradeDefs,settings}){
   );
 }
 
-// Constancia de Estudios - Academic Atelier
+// Constancia de Estudios - Modern Academy v43
 function ConstanciaReport({students,gradeDefs,settings}){
   const getGradeName=(gid)=>gradeDefs.find(g=>g.id===gid)?.name||'';
   const getSecName=(gid,sid)=>{const g=gradeDefs.find(x=>x.id===gid);return g?.secs?.find(s=>s.id===sid)?.name||'';};
@@ -8588,7 +9710,7 @@ function ConstanciaReport({students,gradeDefs,settings}){
   );
 }
 
-// Boleta de Notas - Academic Atelier
+// Boleta de Notas - Modern Academy v43
 function BoletaReport({students,subjects,grades,gradeDefs,fPi,settings,PERIODS_LIST}){
   const safeSubjects=(subjects||[]);
   const getGradeName=(gid)=>gradeDefs.find(g=>g.id===gid)?.name||'';
@@ -8665,7 +9787,7 @@ function BoletaReport({students,subjects,grades,gradeDefs,fPi,settings,PERIODS_L
   );
 }
 
-// Informe de Progreso - Academic Atelier
+// Informe de Progreso - Modern Academy v43
 function InformeReport({students,subjects,grades,attendance,gradeDefs,fPi,settings,PERIODS_LIST}){
   const safeSubjects=subjects||[];
   const getGradeName=(gid)=>gradeDefs.find(g=>g.id===gid)?.name||'';
@@ -8815,9 +9937,10 @@ function CanvasView({students,subjects,grades,attendance,gradeDefs,settings,auth
   
   const courseQuizzes=quizzes.filter(q=>q.courseId===selCourse?.id);
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const isTeacher=scope.isTeacher;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const isTeacher=scopeHasSubs;
   const visSubjects=isTeacher?scope.mySubjects:subjects;
-  const visStudents=isTeacher?students.filter(s=>scope.myStudentIds.includes(s.id)):students;
+  const visStudents=isTeacher&&scope.myStudentIds.length>0?students.filter(s=>scope.myStudentIds.includes(s.id)):students;
   
   const saveAnn=()=>{
     if(!annForm.title||!annForm.body)return alert('Completa título y mensaje');
@@ -8874,7 +9997,7 @@ function CanvasView({students,subjects,grades,attendance,gradeDefs,settings,auth
           Volver a cursos
         </button>
         
-        {/* Course Header - Academic Atelier */}
+        {/* Course Header - Modern Academy v43 */}
         <div style={{background:'linear-gradient(135deg,#059669,#10B981)',padding:'32px',borderRadius:'1.5rem',marginBottom:24,position:'relative',overflow:'hidden'}}>
           <div style={{position:'absolute',width:400,height:400,borderRadius:'50%',background:'rgba(255,255,255,0.1)',top:-150,right:-100,filter:'blur(60px)'}}/>
           <div style={{position:'relative',display:'flex',alignItems:'center',gap:20}}>
@@ -9085,7 +10208,7 @@ function CanvasView({students,subjects,grades,attendance,gradeDefs,settings,auth
   
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:24,marginBottom:32}}>
         <div style={{background:'linear-gradient(135deg,#2563EB,#3B82F6)',borderRadius:'2rem',padding:'40px',position:'relative',overflow:'hidden',minHeight:200}}>
           <div style={{position:'absolute',width:400,height:400,borderRadius:'50%',background:'rgba(255,255,255,0.1)',top:-150,right:-100,filter:'blur(60px)'}}/>
@@ -10514,6 +11637,7 @@ const PanelGrupos=GruposReport;
 // ── PANEL DOCENTE (Reportes para docentes) ─────────────────
 function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,auth}){
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
   const PERIODS_LIST=settings?.periods||PERIODS;
   const[reportTab,setReportTab]=React.useState('boleta');
   const[exportFormat,setExportFormat]=React.useState('xlsx');
@@ -10524,8 +11648,8 @@ function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,au
   const[fPi,setFPi]=React.useState('0');
   
   const selGDef=gradeDefs.find(g=>g.id===fGrado);
-  const availGrades=scope.isTeacher?gradeDefs.filter(g=>myGids.includes(g.id)):gradeDefs;
-  const availSecs=(selGDef?.secs||[]).filter(s=>!scope.isTeacher||mySids.includes(s.id));
+  const availGrades=scopeHasSubs?gradeDefs.filter(g=>myGids.includes(g.id)):gradeDefs;
+  const availSecs=(selGDef?.secs||[]).filter(s=>!scopeHasSubs||mySids.includes(s.id));
   
   const stsFilt=(students||[]).filter(s=>{
     if(fGrado&&s.gid!==fGrado)return false;
@@ -10766,7 +11890,7 @@ function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,au
           {/* Filtros */}
           <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
             <select value={fGrado} onChange={e=>{setFGrado(e.target.value);setFSec('');}} style={{height:40,borderRadius:8,border:'1.5px solid #e5e7eb',padding:'0 12px',fontSize:12,background:'white',minWidth:140}}>
-              <option value="">{scope.isTeacher?'Mi grado':'Todos los grados'}</option>
+              <option value="">{scopeHasSubs?'Mi grado':'Todos los grados'}</option>
               {availGrades.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
             <select value={fSec} onChange={e=>setFSec(e.target.value)} disabled={!fGrado} style={{height:40,borderRadius:8,border:'1.5px solid #e5e7eb',padding:'0 12px',fontSize:12,background:'white',minWidth:120,opacity:fGrado?1:0.5}}>
@@ -10827,6 +11951,7 @@ function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,au
         {reportTab==='informe'&&<InformeReport students={stsFilt||[]} subjects={scope.mySubjects||[]} grades={grades} attendance={attendance} gradeDefs={gradeDefs} fPi={fPi} settings={settings} PERIODS_LIST={PERIODS_LIST}/>}
         {reportTab==='carnet'&&<CarnetReport students={stsFilt} gradeDefs={gradeDefs} settings={settings}/>}
         {reportTab==='constancia'&&<ConstanciaReport students={stsFilt} gradeDefs={gradeDefs} settings={settings}/>}
+        {reportTab==='grupos'&&<GruposReport students={stsFilt||[]} gradeDefs={gradeDefs} subjects={scope.mySubjects||[]} grades={grades}/>}
       </div>
     </div>
   );
@@ -10871,8 +11996,9 @@ function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,au
   };
 
   const scope=getTeacherScope(auth,subjects,gradeDefs,students);
-  const isTeacher=scope.isTeacher;
-  const visStudents=isTeacher?students.filter(s=>scope.myStudentIds.includes(s.id)):students;
+  const scopeHasSubs=scope.isTeacher&&scope.mySubjects&&scope.mySubjects.length>0;
+  const isTeacher=scopeHasSubs;
+  const visStudents=isTeacher&&scope.myStudentIds.length>0?students.filter(s=>scope.myStudentIds.includes(s.id)):students;
   const visSubjects=isTeacher?scope.mySubjects:subjects;
   const visGids=isTeacher?scope.myGids:gradeDefs.map(g=>g.id);
   const visGrades=isTeacher?gradeDefs.filter(g=>visGids.includes(g.id)):gradeDefs;
@@ -10926,7 +12052,7 @@ function PanelDocente({students,subjects,grades,attendance,gradeDefs,settings,au
       </div>
     </div>}
     
-    {/* Hero Section - Academic Atelier Bento */}
+    {/* Hero Section - Modern Academy v43 Bento */}
     <div className="dash-bento" style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:24,marginBottom:32}}>
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'2rem',padding:'40px',position:'relative',overflow:'hidden',minHeight:280}}>
         <div style={{position:'absolute',width:400,height:400,borderRadius:'50%',background:'rgba(253,211,77,0.15)',top:-150,right:-100,filter:'blur(60px)'}}/>
@@ -12004,7 +13130,7 @@ function Mensajes({auth,users,students,subjects,gradeDefs}){
 
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24,marginBottom:28}}>
         <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'2rem',padding:'32px',position:'relative',overflow:'hidden',boxShadow:'0 8px 32px rgba(175,36,40,0.3)'}}>
           <div style={{position:'absolute',width:300,height:300,borderRadius:'50%',background:'rgba(255,255,255,0.15)',top:-100,right:-80,filter:'blur(60px)'}}/>
@@ -12034,7 +13160,7 @@ function Mensajes({auth,users,students,subjects,gradeDefs}){
         </div>
       </div>
 
-      {/* Tabs - Academic Atelier */}
+      {/* Tabs - Modern Academy v43 */}
       <div style={{display:'flex',gap:12,marginBottom:24,flexWrap:'wrap'}}>
         {[{v:'chat',l:'Chat',icon:'chat'},{v:'broadcast',l:'Broadcast',icon:'campaign'},{v:'anuncios',l:'Anuncios',icon:'notifications_active'}].map(t=>(
           <button key={t.v} onClick={()=>setTab(t.v)} style={{
@@ -12455,7 +13581,7 @@ function ComunidadEscolar({students,gradeDefs,onSaveStudents}){
   
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'1.5rem',padding:'28px 32px',marginBottom:20,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',zIndex:1}}>
@@ -12471,7 +13597,7 @@ function ComunidadEscolar({students,gradeDefs,onSaveStudents}){
         </div>
       </div>
       
-      {/* Stats Bento Grid - Academic Atelier */}
+      {/* Stats Bento Grid - Modern Academy v43 */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:24}}>
         <div style={{background:'white',borderRadius:'1.25rem',padding:20,boxShadow:'0 4px 16px rgba(45,47,47,0.06)'}}>
           <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
@@ -12511,7 +13637,7 @@ function ComunidadEscolar({students,gradeDefs,onSaveStudents}){
         </div>
       </div>
       
-      {/* Tabs - Academic Atelier */}
+      {/* Tabs - Modern Academy v43 */}
       <div style={{display:'flex',gap:8,marginBottom:20,padding:'8px 10px',background:'var(--surface-low)',borderRadius:16,flexWrap:'wrap'}}>
         {TABS.map(t=>{
           const isActive=tab===t.v;
@@ -12980,7 +14106,7 @@ function PanelDocentesEscuela({users,subjects,grades,attendance,normasReg,onSave
   
   return(
     <div className="fade">
-      {/* Header - Academic Atelier */}
+      {/* Header - Modern Academy v43 */}
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'1.5rem',padding:'28px 32px',marginBottom:20,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',zIndex:1}}>
@@ -13007,7 +14133,7 @@ function PanelDocentesEscuela({users,subjects,grades,attendance,normasReg,onSave
         </div>
       )}
       
-      {/* Tabs - Academic Atelier */}
+      {/* Tabs - Modern Academy v43 */}
       <div style={{display:'flex',gap:8,marginBottom:20,padding:'8px 10px',background:'var(--surface-low)',borderRadius:16,flexWrap:'wrap'}}>
         {TABS.map(t=>{
           const isActive=tab===t.v;
@@ -14225,7 +15351,7 @@ function Config({settings,onSave,allData,onImport,onClearPhotos,cloudCfg,onSaveC
   ];
 
   // Cloud form state (local to Config)
-  const[cUrl,setCUrl]=useState('libsql://edugest-osanliam.aws-us-east-1.turso.io');
+  const[cUrl,setCUrl]=useState('https://edugest-osanliam.aws-us-east-1.turso.io');
   const[cKey,setCKey]=useState('eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzU0NzczMzAsImlkIjoiMDE5ZDYyYjAtMzkwMS03MTYyLWExODctNTgyMGZkNTJmOWI5IiwicmlkIjoiNDFlNjIyNWYtYWVlMS00MzZlLWI5YTctMTY1YjBkODE1ZDZmIn0.0yN-0oCGUsiJv9J_b_wNBL0uTDKWs2Q3S5Bj8wOVMHip_REJKR9WyzStYXVrE2cDwxNWbXxBcoOpNXNcycrSDw');
   const[cSchool,setCSchool]=useState('mfhf');
   const[cSaved,setCSaved]=useState(false);
@@ -14240,7 +15366,7 @@ function Config({settings,onSave,allData,onImport,onClearPhotos,cloudCfg,onSaveC
 
   return(
     <div className="fade">
-      {/* Header - Academic Atelier Hero */}
+      {/* Header - Modern Academy v43 Hero */}
       <div style={{background:'linear-gradient(135deg,#af2428,#ff766f)',borderRadius:'1.5rem',padding:'28px 32px',marginBottom:24,position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:'-40%',right:'-5%',width:200,height:200,background:'rgba(255,255,255,0.1)',borderRadius:'50%'}}/>
         <div style={{position:'absolute',bottom:'-30%',left:'20%',width:120,height:120,background:'rgba(255,255,255,0.08)',borderRadius:'50%'}}/>
@@ -14258,7 +15384,7 @@ function Config({settings,onSave,allData,onImport,onClearPhotos,cloudCfg,onSaveC
         </div>
       </div>
 
-      {/* Tabs - Academic Atelier Pills */}
+      {/* Tabs - Modern Academy v43 Pills */}
       <div style={{display:'flex',gap:8,marginBottom:24,padding:'6px',background:'rgba(255,255,255,0.6)',backdropFilter:'blur(12px)',borderRadius:'1rem',border:'1px solid rgba(175,36,40,0.1)',flexWrap:'wrap',boxShadow:'0 4px 16px rgba(45,47,47,0.06)'}}>
         {TABS_CFG.map(t=>(
           <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{display:'inline-flex',alignItems:'center',gap:8,height:44,padding:'0 22px',borderRadius:25,border:activeTab===t.id?'2px solid #af2428':'2px solid transparent',background:activeTab===t.id?'linear-gradient(135deg,#af2428,#ff766f)':'transparent',color:activeTab===t.id?'white':'var(--t2)',fontSize:13,fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:activeTab===t.id?700:500,cursor:'pointer',transition:'all .25s',boxSizing:'border-box',boxShadow:activeTab===t.id?'0 4px 16px rgba(175,36,40,0.3)':'none'}}>
@@ -15284,7 +16410,7 @@ function Config({settings,onSave,allData,onImport,onClearPhotos,cloudCfg,onSaveC
                 <div style={{display:'flex',flexDirection:'column',gap:12}}>
                   <div>
                     <label style={{fontSize:11,fontWeight:700,color:'#64748B',letterSpacing:'0.05em',display:'block',marginBottom:6}}>URL DE LA BASE DE DATOS</label>
-                    <input value={cUrl} onChange={e=>setCUrl(e.target.value)} placeholder="libsql://xxxx.turso.io" style={{width:'100%',padding:'12px 16px',background:'var(--surface-low)',border:'none',borderRadius:12,fontSize:13,fontFamily:'monospace',boxSizing:'border-box'}}/>
+                    <input value={cUrl} onChange={e=>setCUrl(e.target.value)} placeholder="https://xxxx.turso.io" style={{width:'100%',padding:'12px 16px',background:'var(--surface-low)',border:'none',borderRadius:12,fontSize:13,fontFamily:'monospace',boxSizing:'border-box'}}/>
                   </div>
                   <div>
                     <label style={{fontSize:11,fontWeight:700,color:'#64748B',letterSpacing:'0.05em',display:'block',marginBottom:6}}>TOKEN DE AUTORIZACIÓN</label>
@@ -16078,7 +17204,7 @@ const DEFAULT_DOCS=[];
       }catch{}
       loaded++;
     }
-    if(data['v5_bim_units']){try{localStorage.setItem('v5_bim_units',JSON.stringify(data['v5_bim_units']));}catch{}loaded++;}
+    if(data['v5_bim_units']){try{const bval=data['v5_bim_units'];localStorage.setItem('v5_bim_units',JSON.stringify(bval));setBimUnitsAll(bval);}catch{}loaded++;}
 
     setCloudStatus('ok');
     setCloudLastSync(new Date().toLocaleTimeString('es-PE'));
@@ -16299,7 +17425,7 @@ const DEFAULT_DOCS=[];
         ['v5_inc',incidents],['v5_att',mergedAtt],['v5_gd',gradeDefs],
         ['v5_nr',mergedNr],['v5_us',(()=>{const m={};users.forEach(u=>{if(!m[u.username?.toLowerCase()])m[u.username?.toLowerCase()]=u;});return Object.values(m);})()],['v5_se',settings],
         ...(isAdminOrDir&&diagClaves?[['v5_diag_claves',diagClaves]]:[]),
-        ...(bimUnitsCloud?[['v5_bim_units',bimUnitsCloud]]:[]),
+        ...(isAdminOrDir&&bimUnitsCloud?[['v5_bim_units',bimUnitsCloud]]:[]),
         ...(horarioCloud?[['v5_horario',horarioCloud]]:[]),
         ...(mensajesCloud?[['v5_mensajes',mensajesCloud]]:[]),
         ...(isAdminOrDir&&anunciosCloud?[['v5_anuncios',anunciosCloud]]:[]),
@@ -16324,7 +17450,7 @@ const DEFAULT_DOCS=[];
         ['v5_inc',incidents],['v5_att',attendance],['v5_gd',gradeDefs],
         ['v5_nr',normasReg],['v5_us',(()=>{const m={};users.forEach(u=>{if(!m[u.username?.toLowerCase()])m[u.username?.toLowerCase()]=u;});return Object.values(m);})()],['v5_se',settings],
         ...(isAdminOrDir&&diagClaves?[['v5_diag_claves',diagClaves]]:[]),
-        ...(bimUnitsCloud?[['v5_bim_units',bimUnitsCloud]]:[]),
+        ...(isAdminOrDir&&bimUnitsCloud?[['v5_bim_units',bimUnitsCloud]]:[]),
         ...(horarioCloud?[['v5_horario',horarioCloud]]:[]),
         ...(mensajesCloud?[['v5_mensajes',mensajesCloud]]:[]),
         ...(isAdminOrDir&&anunciosCloud?[['v5_anuncios',anunciosCloud]]:[]),
@@ -16349,6 +17475,7 @@ const DEFAULT_DOCS=[];
     {id:'normas',l:'Normas Convivencia',i:'📜',g:'Seguimiento',perm:'normas'},
     {id:'reportes',l:'Reportes',i:'📑',g:'',perm:'reports'},
     {id:'usuarios',l:'Usuarios',i:'👥',g:'Admin',perm:'users'},
+    {id:'grados_alumnos',l:'Grados',i:'🏫',g:'Admin',perm:'users'},
     {id:'subjects',l:'Cursos',i:'📖',g:'Admin',perm:'subjects'},
     {id:'config',l:'Configuración',i:'⚙️',g:'',perm:'config'},
   ];
@@ -16454,7 +17581,7 @@ const DEFAULT_DOCS=[];
           </div>
           <div className="sb-text" style={{whiteSpace:'nowrap'}}>
             <h2 style={{fontSize:20,fontWeight:900,margin:0,fontFamily:'Plus Jakarta Sans,sans-serif',color:'#af2428',letterSpacing:'-0.5px'}}>EduGest</h2>
-            <p style={{fontSize:10,fontWeight:700,color:'#5a5c5c',letterSpacing:'0.05em',margin:0}}>Academic Atelier</p>
+            <p style={{fontSize:10,fontWeight:700,color:'#5a5c5c',letterSpacing:'0.05em',margin:0}}>Modern Academy v43</p>
           </div>
         </div>
         <nav style={{flex:1,display:'flex',flexDirection:'column',gap:4,overflowY:'auto',overflowX:'hidden',padding:'0 10px'}}>
@@ -16537,7 +17664,7 @@ const DEFAULT_DOCS=[];
             <span className="material-symbols-outlined">menu</span>
           </button>
 
-          {/* Title - Academic Atelier Style */}
+          {/* Title - Modern Academy v43 Style */}
           <div style={{display:'flex',alignItems:'center',gap:12}}>
             <span style={{fontSize:24}}>{NAV.find(n=>n.id===tab)?.i||'📄'}</span>
             <div>
@@ -16557,7 +17684,7 @@ const DEFAULT_DOCS=[];
             }}>💾 Guardado</span>
           )}
 
-          {/* Search - Academic Atelier */}
+          {/* Search - Modern Academy v43 */}
           <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:16}}>
             <div style={{position:'relative',display:'flex',alignItems:'center'}}>
               <span className="material-symbols-outlined" style={{position:'absolute',left:14,color:'var(--t3)',fontSize:20}}>search</span>
@@ -16686,6 +17813,7 @@ const DEFAULT_DOCS=[];
           {tab==='reportes'&&<PanelDocente students={students} subjects={subjects} grades={grades} attendance={attendance} gradeDefs={gradeDefs} settings={settings} auth={auth}/>}
           {tab==='usuarios'&&<UsersPanel users={users} students={students} subjects={subjects} gradeDefs={gradeDefs} onSaveUsers={save('v5_us',setUsers)} onSaveStudents={save('v5_st',setStudents)} onSaveSubjects={save('v5_su',setSubjects)} auth={auth}/>}
           {tab==='alumnos'&&<AlumnosPanel gradeDefs={gradeDefs} students={students} onSaveStudents={save('v5_st',setStudents)}/>}
+          {tab==='grados_alumnos'&&<GradosPanel gradeDefs={gradeDefs} students={students} onSaveGrades={save('v5_gd',setGradeDefs)} onNavigateToTab={(t,gid)=>{if(gid)localStorage.setItem('v5_preselected_grade',gid);setTab(t);}}/>}
           {tab==='docentes'&&<PanelDocentesEscuela users={users} subjects={subjects} grades={grades} attendance={attendance} normasReg={normasReg} onSaveUsers={save('v5_us',setUsers)} auth={auth}/>}
           {tab==='subjects'&&<Subjects subjects={subjects} onSave={save('v5_su',setSubjects)} gradeDefs={gradeDefs} students={students} users={users}/>}
           {tab==='config'&&<Config settings={settings} onSave={save('v5_se',setSettings)} auth={auth}
@@ -16748,5 +17876,15 @@ function AppWithProviders(){
 }
 ReactDOM.render(<AppWithProviders/>,document.getElementById('root'));
 </script>
+<!-- Bottom Navigation Bar v43 -->
+<div class="bottom-nav-v43">
+  <div class="bottom-nav-v43-items">
+    <div class="bottom-nav-item-v43 active" onclick="alert('📊 Dashboard')"><span style="font-size:18px">📊</span><span>Dashboard</span></div>
+    <div class="bottom-nav-item-v43" onclick="alert('📋 Notas')"><span style="font-size:18px">📋</span><span>Notas</span></div>
+    <div class="bottom-nav-item-v43" onclick="alert('📈 Resumen')"><span style="font-size:18px">📈</span><span>Resumen</span></div>
+    <div class="bottom-nav-item-v43" onclick="alert('👥 Alumnos')"><span style="font-size:18px">👥</span><span>Alumnos</span></div>
+    <div class="bottom-nav-item-v43" onclick="alert('⚙️ Config')"><span style="font-size:18px">⚙️</span><span>Config</span></div>
+  </div>
+</div>
 </body>
 </html>
